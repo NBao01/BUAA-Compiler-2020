@@ -84,7 +84,8 @@ int StateMachine::transit(char c) {
 		}
 	}
 	else if (state == CHARCON_STATE_1) {
-		if (isalpha(c) || isdigit(c) || c == '+' || c == '*' || c == '_') {
+		if (isalpha(c) || isdigit(c) || 
+			c == '+' || c == '-' || c == '*' || c == '/' || c == '_') {
 			state = CHARCON_STATE_2;
 		}
 		else {
