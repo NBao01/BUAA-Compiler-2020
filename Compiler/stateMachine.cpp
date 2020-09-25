@@ -13,7 +13,7 @@ int StateMachine::state = INITIAL_STATE;
 */
 int StateMachine::transit(char c) {
 	if (state == INITIAL_STATE) {
-		if (isalpha(c)) {
+		if (isalpha(c) || c == '_') {
 			state = IDENFR_STATE;
 		}
 		else if (isdigit(c)) {
