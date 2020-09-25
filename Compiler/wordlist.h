@@ -10,7 +10,7 @@ private:
 	int type;
 	int line;
 public:
-	Wordlist(const char* word, int type, int line);
+	Wordlist(std::string* word, int type, int line);
 	// char* getWord();
 	std::string& getWord();
 	int getType();

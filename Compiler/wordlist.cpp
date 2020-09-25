@@ -1,6 +1,6 @@
 #include "wordlist.h"
 
-Wordlist::Wordlist(const char* word, int type, int line) : word(*(new std::string(word))) {
+Wordlist::Wordlist(std::string* word, int type, int line) : word(*word) {
 	this->type = type;
 	this->line = line;
 }

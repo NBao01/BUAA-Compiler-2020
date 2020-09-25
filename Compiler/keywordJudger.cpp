@@ -28,10 +28,10 @@ const int types[15] = {
 * return the type if the word is a keyword.
 * return IDENFR if the word is not a keyword.
 */
-int KeywordJudger::isKeyword(char* word) {
+int KeywordJudger::isKeyword(std::string& word) {
 	// TODO: tolower the string.
 	std::string s("");
-	for (int i = 0; word[i] != '\0'; i++) {
+	for (int i = 0; i < word.size(); i++) {
 		s += tolower(word[i]);
 	}
 	int lo = 0, hi = 14;

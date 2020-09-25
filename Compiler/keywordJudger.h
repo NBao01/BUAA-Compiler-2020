@@ -8,7 +8,7 @@ private:
 	const static std::string dict[15];
 	const static int tokens[15];
 public:
-	static int isKeyword(char* word);
+	static int isKeyword(std::string& word);
 };
 
 #endif // !__KEYWORDJUDGER_H__
