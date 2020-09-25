@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __TOKENS_H__
+#define __TOKENS_H__
+
+#include <string>
 
 #define UNKNOWN		0
 #define IDENFR		1
@@ -40,3 +43,9 @@
 #define RBRACK		37
 #define LBRACE		38
 #define RBRACE		39
+
+#define WHITESPACE	40	// FOR WHITESPACE FILTER
+
+extern const std::string tokens[40];
+
+#endif // !__TOKENS_H__
