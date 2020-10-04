@@ -1,14 +1,16 @@
 #include "wordlist.h"
 
-Wordlist::Wordlist(std::string* word, int type, int line) : word(*word) {
+std::vector<Word*> wordlist;
+
+Word::Word(std::string* word, int type, int line) : word(*word) {
 	this->type = type;
 	this->line = line;
 }
 
-std::string& Wordlist::getWord() {
+std::string& Word::getWord() {
 	return word;
 }
 
-int Wordlist::getType() {
+int Word::getType() {
 	return type;
 }
