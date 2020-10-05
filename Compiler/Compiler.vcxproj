@@ -142,18 +142,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="abstractSyntaxTree.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="keywordJudger.h" />
     <ClInclude Include="lexicalAnalyzer.h" />
+    <ClInclude Include="parser.h" />
     <ClInclude Include="stateMachine.h" />
+    <ClInclude Include="symbols.h" />
+    <ClInclude Include="syntaxAnalyzer.h" />
     <ClInclude Include="tokens.h" />
     <ClInclude Include="wordlist.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="abstractSyntaxTree.cpp" />
+    <ClCompile Include="error.cpp" />
     <ClCompile Include="keywordJudger.cpp" />
     <ClCompile Include="lexicalAnalyzer.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="parser.cpp" />
     <ClCompile Include="stateMachine.cpp" />
+    <ClCompile Include="symbols.cpp" />
+    <ClCompile Include="syntaxAnalyzer.cpp" />
     <ClCompile Include="tokens.cpp" />
     <ClCompile Include="wordlist.cpp" />
   </ItemGroup>
