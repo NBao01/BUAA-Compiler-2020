@@ -192,14 +192,12 @@ SymbolNode* Parser::_變量定義無初始化() {
 			node->addChild(new SymbolNode(word));
 			getsym();
 			node->addChild(_無符號整數());
-			getsym();
 			node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
 			getsym();
 			if (word->getType() == LBRACK) {
 				node->addChild(new SymbolNode(word));
 				getsym();
 				node->addChild(_無符號整數());
-				getsym();
 				node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
 				getsym();
 			}
@@ -230,7 +228,6 @@ SymbolNode* Parser::_變量定義及初始化() {
 		node->addChild(new SymbolNode(word));
 		getsym();
 		node->addChild(_無符號整數());
-		getsym();
 		node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
 		getsym();
 		if (word->getType() == LBRACK) {
@@ -238,7 +235,6 @@ SymbolNode* Parser::_變量定義及初始化() {
 			node->addChild(new SymbolNode(word));
 			getsym();
 			node->addChild(_無符號整數());
-			getsym();
 			node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
 			getsym();
 			node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
@@ -249,25 +245,28 @@ SymbolNode* Parser::_變量定義及初始化() {
 			getsym();
 			node->addChild(_常量());
 			while (word->getType() == COMMA) {
+				node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 				getsym();
 				node->addChild(_常量());
 			}
 			node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
 			getsym();
-			if (word->getType() == COMMA) {
+			while (word->getType() == COMMA) {
+				node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 				getsym();
 				node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 				getsym();
 				node->addChild(_常量());
 				while (word->getType() == COMMA) {
+					node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 					getsym();
 					node->addChild(_常量());
 				}
 				node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
 				getsym();
-				node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
-				getsym();
 			}
+			node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
+			getsym();
 		} 
 		else { // ＜标识符＞'['＜无符号整数＞']'='{'＜常量＞{,＜常量＞}'}'
 			node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
@@ -276,6 +275,7 @@ SymbolNode* Parser::_變量定義及初始化() {
 			getsym();
 			node->addChild(_常量());
 			while (word->getType() == COMMA) {
+				node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 				getsym();
 				node->addChild(_常量());
 			}
@@ -315,13 +315,11 @@ SymbolNode* Parser::_類型標識符() {
 // ＜常量＞ ::= ＜整数＞|＜字符＞
 SymbolNode* Parser::_常量() {
 	SymbolNode* node = new SymbolNode(常量);
-	if (word->getType() == INTCON) {
+	if (word->getType() == INTCON || word->getType() == PLUS || word->getType() == MINU) {
 		node->addChild(_整數());
-		getsym();
 	}
 	else if (word->getType() == CHARCON) {
 		node->addChild(_字符());
-		getsym();
 	}
 	else error();
 	return node;
@@ -421,14 +419,14 @@ SymbolNode* Parser::_語句() {
 		node->addChild(_條件語句());
 	}
 	else if (word->getType() == IDENFR) {
-		int peeknum = 0;
+		/*int peeknum = 0;
 		while (peeksym(peeknum)->getType() != ASSIGN && peeksym(peeknum)->getType() != LPARENT) {
 			peeknum++;
-		}
-		if (peeksym(peeknum)->getType() == ASSIGN) {
+		}*/
+		if (peeksym(0)->getType() != LPARENT) {
 			node->addChild(_賦值語句());
 		}
-		else if (peeksym(peeknum)->getType() == LPARENT) {
+		else {
 			bool isVoidFunc = false;
 			for (int i = 0; i < VoidFuncTable.size(); i++) {
 				if (word->getWord() == VoidFuncTable[i]->getWord()) {
@@ -527,6 +525,7 @@ SymbolNode* Parser::_循環語句() {
 SymbolNode* Parser::_條件語句() {
 	SymbolNode* node = new SymbolNode(條件語句);
 	node->addChild(new SymbolNode(word));	// word->getType() is IFTK
+	getsym();
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild(_條件());
@@ -535,6 +534,7 @@ SymbolNode* Parser::_條件語句() {
 	node->addChild(_語句());
 	if (word->getType() == ELSETK) {
 		node->addChild(new SymbolNode(word));	// word->getType() is ELSETK
+		getsym();
 		node->addChild(_語句());
 	}
 	return node;
@@ -635,7 +635,7 @@ SymbolNode* Parser::_因子() {
 		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 		getsym();
 	}
-	else if (word->getType() == INTCON) {
+	else if (word->getType() == INTCON || word->getType() == PLUS || word->getType() == MINU) {
 		node->addChild(_整數());
 	}
 	else if (word->getType() == CHARCON) {
