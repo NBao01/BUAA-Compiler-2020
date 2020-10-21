@@ -15,6 +15,7 @@ public:
 	// char* getWord();
 	std::string& getWord();
 	int getType();
+	int getLine();
 };
 
 extern std::vector<Word*> wordlist;

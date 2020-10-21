@@ -9,7 +9,7 @@ int StateMachine::state = INITIAL_STATE;
 * pass a char as trigger to transit.
 * return the macro in tokens.h if the machine reach the final states.
 * return 0 if the machine is in the intermediate states.
-* return -GENERAL_ERROR if the machine is trapped in error state.
+* return -ERROR_A if the machine is trapped in error state.
 */
 int StateMachine::transit(char c) {
 	if (state == INITIAL_STATE) {
@@ -51,6 +51,10 @@ int StateMachine::transit(char c) {
 		else if (c == '{') { return LBRACE; }
 		else if (c == '}') { return RBRACE; }
 		else if (isspace(c)) { return WHITESPACE; } // FOR WHITESPACES FILTER
+		else {
+			state = TRAP_STATE;
+			return -ERROR_A;
+		}
 	}
 	else if (state == IDENFR_STATE) {
 		if (isalpha(c) || isdigit(c) || c == '_') {
@@ -80,7 +84,7 @@ int StateMachine::transit(char c) {
 		}
 		else {
 			state = TRAP_STATE;
-			return -GENERAL_ERROR;
+			return -ERROR_A;
 		}
 	}
 	else if (state == CHARCON_STATE_1) {
@@ -90,7 +94,7 @@ int StateMachine::transit(char c) {
 		}
 		else {
 			state = TRAP_STATE;
-			return -GENERAL_ERROR;
+			return -ERROR_A;
 		}
 	}
 	else if (state == CHARCON_STATE_2) {
@@ -100,7 +104,7 @@ int StateMachine::transit(char c) {
 		}
 		else {
 			state = TRAP_STATE;
-			return -GENERAL_ERROR;
+			return -ERROR_A;
 		}
 	}
 	else if (state == LSS_STATE) {
@@ -140,8 +144,14 @@ int StateMachine::transit(char c) {
 		}
 		else {
 			state = TRAP_STATE;
-			return -GENERAL_ERROR;
+			return -ERROR_A;
 		}
+	}
+	else if (state == TRAP_STATE) {
+		if (c == '\n') {
+			state = INITIAL_STATE;
+		}
+		return WHITESPACE; // See all characters in TRAP_STATE as whitespace.
 	}
 	return 0;
 }

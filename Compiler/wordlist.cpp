@@ -14,3 +14,7 @@ std::string& Word::getWord() {
 int Word::getType() {
 	return type;
 }
+
+int Word::getLine() {
+	return line;
+}
