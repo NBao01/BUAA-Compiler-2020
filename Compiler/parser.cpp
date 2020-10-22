@@ -517,6 +517,11 @@ SymbolNode* Parser::_循環語句() {
 		getsym();
 		node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 		getsym();
+
+		// ERROR_C JUDGER
+		TableTools::errorJudgerC(word);
+		// ERROR_C JUDGER END
+
 		node->addChild(_標識符());
 		node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
 		getsym();
@@ -631,6 +636,11 @@ SymbolNode* Parser::_加法運算符() {
 SymbolNode* Parser::_因子() {
 	SymbolNode* node = new SymbolNode(因子);
 	if (word->getType() == IDENFR && peeksym(0)->getType() != LPARENT) {
+
+		// ERROR_C JUDGER
+		TableTools::errorJudgerC(word);
+		// ERROR_C JUDGER END
+
 		node->addChild(_標識符());
 		if (word->getType() == LBRACK) {
 			node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
@@ -680,6 +690,11 @@ SymbolNode* Parser::_乘法運算符() {
 // ＜有返回值函数调用语句＞ ::= ＜标识符＞'('＜值参数表＞')' 
 SymbolNode* Parser::_有返回值函數調用語句() {
 	SymbolNode* node = new SymbolNode(有返回值函數調用語句);
+
+	// ERROR_C JUDGER
+	TableTools::errorJudgerC(word);
+	// ERROR_C JUDGER END
+
 	node->addChild(_標識符());
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
@@ -710,6 +725,11 @@ SymbolNode* Parser::_讀語句() {
 	getsym();
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
+
+	// ERROR_C JUDGER
+	TableTools::errorJudgerC(word);
+	// ERROR_C JUDGER END
+
 	node->addChild(_標識符());
 	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 	getsym();
@@ -840,6 +860,11 @@ SymbolNode* Parser::_情況子語句() {
 */
 SymbolNode* Parser::_賦值語句() {
 	SymbolNode* node = new SymbolNode(賦值語句);
+
+	// ERROR_C JUDGER
+	TableTools::errorJudgerC(word);
+	// ERROR_C JUDGER END
+
 	node->addChild(_標識符());
 	if (word->getType() == LBRACK) {
 		node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
@@ -864,6 +889,11 @@ SymbolNode* Parser::_賦值語句() {
 // ＜无返回值函数调用语句＞ ::= ＜标识符＞'('＜值参数表＞')'
 SymbolNode* Parser::_無返回值函數調用語句() {
 	SymbolNode* node = new SymbolNode(無返回值函數調用語句);
+
+	// ERROR_C JUDGER
+	TableTools::errorJudgerC(word);
+	// ERROR_C JUDGER END
+
 	node->addChild(_標識符());
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();

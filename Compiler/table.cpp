@@ -64,7 +64,14 @@ bool TableItem::isSameScope(int curScope) {
 }
 
 bool TableItem::isSameName(std::string* name) {
-	return *(this->name) == *name;
+	std::string a(""), b("");
+	for (int i = 0; i < name->size(); i++) {
+		a += tolower(name->at(i));
+	}
+	for (int i = 0; i < this->name->size(); i++) {
+		b += tolower(this->name->at(i));
+	}
+	return a == b;
 }
 
 // Add consts to the table, add error_b to errorlist if there is any redefined consts
@@ -198,4 +205,15 @@ void TableTools::addFunc(int it) {
 	assert(funcItem != nullptr);
 	funcItem->setParams(paramsNum, paramsRetType);
 	it_prev = it;
+}
+
+void TableTools::errorJudgerC(Word* word) {
+	assert(word->getType() == IDENFR);
+	for (int i = table.size() - 1; i >= 0; i--) {
+		if ((table[i]->isSameScope(TableItem::scope_i) || table[i]->isSameScope(0)) 
+			&& table[i]->isSameName(&word->getWord())) {
+			return;
+		}
+	}
+	ErrorHandler::addErrorItem(ERROR_C, word->getLine());
 }

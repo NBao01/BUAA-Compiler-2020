@@ -53,6 +53,7 @@ public:
 	static void addVars(int it);
 	static void addFunc(int it);
 	// Table Search Tools
+	static void errorJudgerC(Word* word);
 };
 
 #endif // !__TABLE_H__
