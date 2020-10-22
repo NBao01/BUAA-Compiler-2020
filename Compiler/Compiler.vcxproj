@@ -150,6 +150,7 @@
     <ClInclude Include="stateMachine.h" />
     <ClInclude Include="symbols.h" />
     <ClInclude Include="syntaxAnalyzer.h" />
+    <ClInclude Include="table.h" />
     <ClInclude Include="tokens.h" />
     <ClInclude Include="wordlist.h" />
   </ItemGroup>
@@ -163,6 +164,7 @@
     <ClCompile Include="stateMachine.cpp" />
     <ClCompile Include="symbols.cpp" />
     <ClCompile Include="syntaxAnalyzer.cpp" />
+    <ClCompile Include="table.cpp" />
     <ClCompile Include="tokens.cpp" />
     <ClCompile Include="wordlist.cpp" />
   </ItemGroup>

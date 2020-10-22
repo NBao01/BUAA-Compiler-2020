@@ -53,7 +53,7 @@ int StateMachine::transit(char c) {
 		else if (isspace(c)) { return WHITESPACE; } // FOR WHITESPACES FILTER
 		else {
 			state = TRAP_STATE;
-			return -ERROR_A;
+			return -OTHER_ERROR;
 		}
 	}
 	else if (state == IDENFR_STATE) {
@@ -83,19 +83,21 @@ int StateMachine::transit(char c) {
 			return STRCON;
 		}
 		else {
-			state = TRAP_STATE;
-			return -ERROR_A;
-		}
+			state = STRCON_STATE;
+		} // ERROR_A ILLEGAL CHAR
 	}
 	else if (state == CHARCON_STATE_1) {
 		if (isalpha(c) || isdigit(c) || 
 			c == '+' || c == '-' || c == '*' || c == '/' || c == '_') {
 			state = CHARCON_STATE_2;
 		}
-		else {
-			state = TRAP_STATE;
-			return -ERROR_A;
-		}
+		else if (c != '\'') {
+			state = CHARCON_STATE_2;
+		} // ERROR_A ILLEGAL CHAR
+		else if (c == '\'') {
+			state = INITIAL_STATE;
+			return CHARCON;
+		} // ERROR_A NO CHAR
 	}
 	else if (state == CHARCON_STATE_2) {
 		if (c == '\'') {
@@ -104,7 +106,7 @@ int StateMachine::transit(char c) {
 		}
 		else {
 			state = TRAP_STATE;
-			return -ERROR_A;
+			return -OTHER_ERROR;
 		}
 	}
 	else if (state == LSS_STATE) {
@@ -144,7 +146,7 @@ int StateMachine::transit(char c) {
 		}
 		else {
 			state = TRAP_STATE;
-			return -ERROR_A;
+			return -OTHER_ERROR;
 		}
 	}
 	else if (state == TRAP_STATE) {

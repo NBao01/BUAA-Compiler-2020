@@ -28,13 +28,8 @@ void LexicalAnalyzer::analyze() {
 
 		type = StateMachine::transit(c); // make transition
 
-		if (type == -ERROR_A) {
-			while (!wordlist.empty() && wordlist.back()->getLine() == line) {
-				wordlist.pop_back();
-			}
-			ErrorHandler::addErrorItem(type, line);
-			buf.clear();
-			//printf("ERROR IN StateMachine::transit!\n");
+		if (type == -OTHER_ERROR) {
+			printf("ERROR IN StateMachine::transit!\n");
 			// return;
 		}
 		else if (type == 0) {

@@ -2,6 +2,7 @@
 #include "tokens.h"
 #include "error.h"
 #include "symbols.h"
+#include "table.h"
 
 std::vector<Word*> VoidFuncTable;
 
@@ -58,6 +59,7 @@ SymbolNode* Parser::_常量說明() {
 		}
 		else error();
 	}
+	TableTools::addConsts(node);
 	return node;
 }
 
@@ -142,6 +144,20 @@ SymbolNode* Parser::_無符號整數() {
 /* ＜字符＞ ::= '＜加法运算符＞'｜'＜乘法运算符＞'｜'＜字母＞'｜'＜数字＞' */
 SymbolNode* Parser::_字符() {
 	SymbolNode* node = new SymbolNode(字符);
+
+	// ERROR_A JUDGEMENT
+	if (word->getWord().size() == 0) {
+		ErrorHandler::addErrorItem(ERROR_A, word->getLine());
+	} // NO CHAR ERROR
+	else {
+		char c = word->getWord().at(0);
+		if (!(isalpha(c) || isdigit(c) ||
+			c == '+' || c == '-' || c == '*' || c == '/' || c == '_')) {
+			ErrorHandler::addErrorItem(ERROR_A, word->getLine());
+		} // ILLEGAL CHAR ERROR
+	}
+	// ERROR_A JUDGEMENT END
+
 	node->addChild(new SymbolNode(word));	// word->type is CHARCON
 	getsym();
 	return node;
@@ -724,11 +740,25 @@ SymbolNode* Parser::_寫語句() {
 // ＜字符串＞ ::= "｛十进制编码为32,33,35-126的ASCII字符｝" 
 SymbolNode* Parser::_字符串() {
 	SymbolNode* node = new SymbolNode(字符串);
-	if (word->getType() == STRCON) {
-		node->addChild(new SymbolNode(word));
-		getsym();
+
+	// ERROR_A JUDGEMENT
+	if (word->getWord().size() == 0) {
+		ErrorHandler::addErrorItem(ERROR_A, word->getLine());
+	} // NO CHAR ERROR
+	else {
+		for (int i = 0; i < word->getWord().size(); i++) {
+			char c = word->getWord().at(i);
+			if (!(isalpha(c) || isdigit(c) ||
+				c == '+' || c == '-' || c == '*' || c == '/' || c == '_')) {
+				ErrorHandler::addErrorItem(ERROR_A, word->getLine());
+				break;
+			} // ILLEGAL CHAR ERROR
+		}
 	}
-	else error();
+	// ERROR_A JUDGEMENT END
+
+	node->addChild(new SymbolNode(word));
+	getsym();
 	return node;
 }
 
