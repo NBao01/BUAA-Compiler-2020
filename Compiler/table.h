@@ -9,6 +9,7 @@
 #define CONST	0
 #define VAR		1
 #define FUNC	2
+#define PARAM	3
 
 // definition for retType
 #define VOID	0
@@ -23,15 +24,18 @@ private:
 	int scope;
 	int dimension;
 	int paramNum;
-	std::vector<int>* params;
-	static int scope_i;
+	std::vector<int>* paramsRetType;
 public:
-	TableItem(std::string* name, int type, int retType);
+	static int scope_i;
+	TableItem(std::string* name, int type, int retType, int scope);
 	static TableItem* newConstTableItem(std::string* name, int type, int retType);
 	static TableItem* newVarTableItem(std::string* name, int type, int retType, int dimension);
-	static TableItem* newFuncTableItem(std::string* name, int type, int retType, int paramNum, std::vector<int>* params);
+	static TableItem* newFuncTableItem(std::string* name, int type, int retType);
+	static TableItem* newParamTableItem(std::string* name, int type, int retType);
 	void setDimension(int dimension);
-	void setParams(int paramNum, std::vector<int>* params);
+	void setParams(int paramNum, std::vector<int>* paramsRetType);
+	bool isSameScope(int curScope);
+	bool isSameName(std::string* name);
 };
 
 extern std::vector<TableItem*> table;
@@ -41,9 +45,12 @@ private:
 	static std::string* name;
 	static int type;
 	static int retType;
-	static void addConstsDfs(SymbolNode* node);
+	static int dimension;
+	static int it_prev; // iterator of wordlist, stored to ensure the range of parts of the program.
 public:
-	static void addConsts(SymbolNode* node);
+	static void addConsts(int it);
+	static void addVars(int it);
+	static void addFunc(int it);
 	//void setName(std::string* name);
 	//void setType(int type);
 	//void setRetType(int retType);

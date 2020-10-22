@@ -59,7 +59,7 @@ SymbolNode* Parser::_常量說明() {
 		}
 		else error();
 	}
-	TableTools::addConsts(node);
+	TableTools::addConsts(it - 1);
 	return node;
 }
 
@@ -145,7 +145,7 @@ SymbolNode* Parser::_無符號整數() {
 SymbolNode* Parser::_字符() {
 	SymbolNode* node = new SymbolNode(字符);
 
-	// ERROR_A JUDGEMENT
+	// ERROR_A JUDGER
 	if (word->getWord().size() == 0) {
 		ErrorHandler::addErrorItem(ERROR_A, word->getLine());
 	} // NO CHAR ERROR
@@ -156,7 +156,7 @@ SymbolNode* Parser::_字符() {
 			ErrorHandler::addErrorItem(ERROR_A, word->getLine());
 		} // ILLEGAL CHAR ERROR
 	}
-	// ERROR_A JUDGEMENT END
+	// ERROR_A JUDGER END
 
 	node->addChild(new SymbolNode(word));	// word->type is CHARCON
 	getsym();
@@ -174,6 +174,7 @@ SymbolNode* Parser::_變量說明() {
 		}
 		else error();
 	}
+	TableTools::addVars(it - 1);
 	return node;
 }
 
@@ -350,6 +351,7 @@ SymbolNode* Parser::_有返回值函數定義() {
 	node->addChild(_參數表());
 	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 	getsym();
+	TableTools::addFunc(it - 1);
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 	getsym();
 	node->addChild(_複合語句());
@@ -370,6 +372,7 @@ SymbolNode* Parser::_無返回值函數定義() {
 	node->addChild(_參數表());
 	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 	getsym();
+	TableTools::addFunc(it - 1);
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 	getsym();
 	node->addChild(_複合語句());
@@ -741,7 +744,7 @@ SymbolNode* Parser::_寫語句() {
 SymbolNode* Parser::_字符串() {
 	SymbolNode* node = new SymbolNode(字符串);
 
-	// ERROR_A JUDGEMENT
+	// ERROR_A JUDGER
 	if (word->getWord().size() == 0) {
 		ErrorHandler::addErrorItem(ERROR_A, word->getLine());
 	} // NO CHAR ERROR
@@ -755,7 +758,7 @@ SymbolNode* Parser::_字符串() {
 			} // ILLEGAL CHAR ERROR
 		}
 	}
-	// ERROR_A JUDGEMENT END
+	// ERROR_A JUDGER END
 
 	node->addChild(new SymbolNode(word));
 	getsym();
@@ -881,6 +884,7 @@ SymbolNode* Parser::_主函數() {
 	getsym();
 	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 	getsym();
+	TableTools::addFunc(it - 1);
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 	getsym();
 	node->addChild(_複合語句());
