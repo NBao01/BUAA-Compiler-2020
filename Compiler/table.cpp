@@ -83,8 +83,8 @@ void TableTools::addConsts(int it) {
 			name = &wordlist[i]->getWord();
 
 			// ERROR_B JUDGER
-			for (int i = table.size() - 1; i >= 0; i--) {
-				if (table[i]->isSameScope(TableItem::scope_i) && table[i]->isSameName(name)) {
+			for (int j = table.size() - 1; j >= 0; j--) {
+				if (table[j]->isSameScope(TableItem::scope_i) && table[j]->isSameName(name)) {
 					ErrorHandler::addErrorItem(ERROR_B, wordlist[i]->getLine());
 				}
 			}
@@ -113,8 +113,8 @@ void TableTools::addVars(int it) {
 			name = &wordlist[i]->getWord();
 
 			// ERROR_B JUDGER
-			for (int i = table.size() - 1; i >= 0; i--) {
-				if (table[i]->isSameScope(TableItem::scope_i) && table[i]->isSameName(name)) {
+			for (int j = table.size() - 1; j >= 0; j--) {
+				if (table[j]->isSameScope(TableItem::scope_i) && table[j]->isSameName(name)) {
 					ErrorHandler::addErrorItem(ERROR_B, wordlist[i]->getLine());
 				}
 			}
@@ -179,8 +179,8 @@ void TableTools::addFunc(int it) {
 				name = &wordlist[i]->getWord();
 
 				// ERROR_B JUDGER
-				for (int i = table.size() - 1; i >= 0; i--) {
-					if (table[i]->isSameScope(TableItem::scope_i) && table[i]->isSameName(name)) {
+				for (int j = table.size() - 1; j >= 0; j--) {
+					if (table[j]->isSameScope(TableItem::scope_i) && table[j]->isSameName(name)) {
 						ErrorHandler::addErrorItem(ERROR_B, wordlist[i]->getLine());
 					}
 				}

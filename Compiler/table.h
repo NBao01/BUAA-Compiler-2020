@@ -48,12 +48,11 @@ private:
 	static int dimension;
 	static int it_prev; // iterator of wordlist, stored to ensure the range of parts of the program.
 public:
+	// Table Construct Tools
 	static void addConsts(int it);
 	static void addVars(int it);
 	static void addFunc(int it);
-	//void setName(std::string* name);
-	//void setType(int type);
-	//void setRetType(int retType);
+	// Table Search Tools
 };
 
 #endif // !__TABLE_H__
