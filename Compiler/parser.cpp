@@ -6,11 +6,15 @@
 #include <sstream>
 
 Word* word;
+Word* prevWord;
 int it = 0;	// iterator of wordlist
 
 void getsym() { 
 	//static std::vector<Word*>::iterator it = wordlist.begin();
 	if (it < wordlist.size()) {
+		if (it > 0) {
+			prevWord = word;
+		}
 		word = wordlist[it++];
 	}
 	else {
@@ -58,7 +62,7 @@ SymbolNode* Parser::_常量說明() {
 		}
 		else {
 			// ERROR_K JUDGER
-			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_K, prevWord->getLine());
 			// ERROR_K JUDGER END
 		}
 	}
@@ -177,7 +181,7 @@ SymbolNode* Parser::_變量說明() {
 		}
 		else {
 			// ERROR_K JUDGER
-			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_K, prevWord->getLine());
 			// ERROR_K JUDGER END
 		}
 	}
@@ -222,7 +226,7 @@ SymbolNode* Parser::_變量定義無初始化() {
 			}
 			else {
 				// ERROR_M JUDGER
-				ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+				ErrorHandler::addErrorItem(ERROR_M, prevWord->getLine());
 				// ERROR_M JUDGER END
 			}
 			if (word->getType() == LBRACK) {
@@ -235,7 +239,7 @@ SymbolNode* Parser::_變量定義無初始化() {
 				}
 				else {
 					// ERROR_M JUDGER
-					ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+					ErrorHandler::addErrorItem(ERROR_M, prevWord->getLine());
 					// ERROR_M JUDGER END
 				}
 			}
@@ -283,7 +287,7 @@ SymbolNode* Parser::_變量定義及初始化() {
 		}
 		else {
 			// ERROR_M JUDGER
-			ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_M, prevWord->getLine());
 			// ERROR_M JUDGER END
 		}
 		if (word->getType() == LBRACK) {
@@ -300,7 +304,7 @@ SymbolNode* Parser::_變量定義及初始化() {
 			}
 			else {
 				// ERROR_M JUDGER
-				ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+				ErrorHandler::addErrorItem(ERROR_M, prevWord->getLine());
 				// ERROR_M JUDGER END
 			}
 			node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
@@ -485,7 +489,7 @@ SymbolNode* Parser::_有返回值函數定義() {
 	}
 	else {
 		// ERROR_L JUDGER
-		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 		// ERROR_L JUDGER END
 	}
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
@@ -522,7 +526,7 @@ SymbolNode* Parser::_無返回值函數定義() {
 	}
 	else {
 		// ERROR_L JUDGER
-		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 		// ERROR_L JUDGER END
 	}
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
@@ -612,7 +616,7 @@ SymbolNode* Parser::_語句() {
 		}
 		else {
 			// ERROR_K JUDGER
-			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_K, prevWord->getLine());
 			// ERROR_K JUDGER END
 		}
 	}
@@ -624,7 +628,7 @@ SymbolNode* Parser::_語句() {
 		}
 		else {
 			// ERROR_K JUDGER
-			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_K, prevWord->getLine());
 			// ERROR_K JUDGER END
 		}
 	}
@@ -636,7 +640,7 @@ SymbolNode* Parser::_語句() {
 		}
 		else {
 			// ERROR_K JUDGER
-			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_K, prevWord->getLine());
 			// ERROR_K JUDGER END
 		}
 	}
@@ -655,7 +659,7 @@ SymbolNode* Parser::_語句() {
 		}
 		else {
 			// ERROR_K JUDGER
-			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_K, prevWord->getLine());
 			// ERROR_K JUDGER END
 		}
 	}
@@ -688,7 +692,7 @@ SymbolNode* Parser::_循環語句() {
 		}
 		else {
 			// ERROR_L JUDGER
-			ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 			// ERROR_L JUDGER END
 		}
 		node->addChild(_語句());
@@ -717,7 +721,7 @@ SymbolNode* Parser::_循環語句() {
 		}
 		else {
 			// ERROR_K JUDGER
-			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_K, prevWord->getLine());
 			// ERROR_K JUDGER END
 		}
 		node->addChild(_條件());
@@ -727,7 +731,7 @@ SymbolNode* Parser::_循環語句() {
 		}
 		else {
 			// ERROR_K JUDGER
-			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_K, prevWord->getLine());
 			// ERROR_K JUDGER END
 		}
 		node->addChild(_標識符());
@@ -743,7 +747,7 @@ SymbolNode* Parser::_循環語句() {
 		}
 		else {
 			// ERROR_L JUDGER
-			ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 			// ERROR_L JUDGER END
 		}
 		node->addChild(_語句());
@@ -765,7 +769,7 @@ SymbolNode* Parser::_條件語句() {
 	}
 	else {
 		// ERROR_L JUDGER
-		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 		// ERROR_L JUDGER END
 	}
 	node->addChild(_語句());
@@ -889,7 +893,7 @@ SymbolNode* Parser::_因子() {
 			}
 			else {
 				// ERROR_M JUDGER
-				ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+				ErrorHandler::addErrorItem(ERROR_M, prevWord->getLine());
 				// ERROR_M JUDGER END
 			}
 			if (word->getType() == LBRACK) {
@@ -908,7 +912,7 @@ SymbolNode* Parser::_因子() {
 				}
 				else {
 					// ERROR_M JUDGER
-					ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+					ErrorHandler::addErrorItem(ERROR_M, prevWord->getLine());
 					// ERROR_M JUDGER END
 				}
 			}
@@ -924,7 +928,7 @@ SymbolNode* Parser::_因子() {
 		}
 		else {
 			// ERROR_L JUDGER
-			ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 			// ERROR_L JUDGER END
 		}
 	}
@@ -971,7 +975,7 @@ SymbolNode* Parser::_有返回值函數調用語句() {
 	}
 	else {
 		// ERROR_L JUDGER
-		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 		// ERROR_L JUDGER END
 	}
 
@@ -1023,7 +1027,7 @@ SymbolNode* Parser::_讀語句() {
 	}
 	else {
 		// ERROR_L JUDGER
-		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 		// ERROR_L JUDGER END
 	}
 	return node;
@@ -1053,7 +1057,7 @@ SymbolNode* Parser::_寫語句() {
 	}
 	else {
 		// ERROR_L JUDGER
-		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 		// ERROR_L JUDGER END
 	}
 
@@ -1110,7 +1114,7 @@ SymbolNode* Parser::_返回語句() {
 			}
 			else {
 				// ERROR_L JUDGER
-				ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+				ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 				// ERROR_L JUDGER END
 			}
 
@@ -1152,7 +1156,7 @@ SymbolNode* Parser::_情況語句() {
 	}
 	else {
 		// ERROR_L JUDGER
-		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 		// ERROR_L JUDGER END
 	}
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
@@ -1242,7 +1246,7 @@ SymbolNode* Parser::_賦值語句() {
 		}
 		else {
 			// ERROR_M JUDGER
-			ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+			ErrorHandler::addErrorItem(ERROR_M, prevWord->getLine());
 			// ERROR_M JUDGER END
 		}
 		if (word->getType() == LBRACK) {
@@ -1261,7 +1265,7 @@ SymbolNode* Parser::_賦值語句() {
 			}
 			else {
 				// ERROR_M JUDGER
-				ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+				ErrorHandler::addErrorItem(ERROR_M, prevWord->getLine());
 				// ERROR_M JUDGER END
 			}
 		}
@@ -1287,7 +1291,7 @@ SymbolNode* Parser::_無返回值函數調用語句() {
 	}
 	else {
 		// ERROR_L JUDGER
-		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 		// ERROR_L JUDGER END
 	}
 
@@ -1322,7 +1326,7 @@ SymbolNode* Parser::_主函數() {
 	}
 	else {
 		// ERROR_L JUDGER
-		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
 		// ERROR_L JUDGER END
 	}
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE

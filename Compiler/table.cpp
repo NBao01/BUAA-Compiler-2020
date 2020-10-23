@@ -196,6 +196,16 @@ void TableTools::addFunc(int it) {
 		else if (!funcIdentifierIsDetected) {
 			if (wordlist[i]->getType() == IDENFR || MAINTK) {
 				name = &wordlist[i]->getWord();
+
+				// ERROR_B JUDGER
+				for (int j = table.size() - 1; j >= 0; j--) {
+					if (table[j]->isSameScope(TableItem::scope_i) && table[j]->isSameName(name)) {
+						ErrorHandler::addErrorItem(ERROR_B, wordlist[i]->getLine());
+						break;
+					}
+				}
+				// ERROR_B JUDGER END
+
 				funcItem = TableItem::newFuncTableItem(name, type, retType);
 				table.push_back(funcItem);
 				funcIdentifierIsDetected = true;
