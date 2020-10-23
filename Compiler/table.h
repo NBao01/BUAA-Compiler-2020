@@ -19,8 +19,8 @@
 class TableItem {
 private:
 	std::string* name;
-	int type;
-	int retType;
+	int type;		// CONST, VAR, FUNC, PARAM
+	int retType;	// VOID, INT, CHAR
 	int scope;
 	int dimension;
 	int paramNum;
@@ -36,6 +36,10 @@ public:
 	void setParams(int paramNum, std::vector<int>* paramsRetType);
 	bool isSameScope(int curScope);
 	bool isSameName(std::string* name);
+	int getType();
+	int getRetType();
+	int getParamNum();
+	std::vector<int>* getParamsRetType();
 };
 
 extern std::vector<TableItem*> table;
@@ -53,7 +57,11 @@ public:
 	static void addVars(int it);
 	static void addFunc(int it);
 	// Table Search Tools
-	static void errorJudgerC(Word* word);
+	static bool isVoidFunc(std::string* word);
+	static bool isCharType(SymbolNode* node);
+	static bool errorJudgerC(Word* word);
+	static bool errorJudgerD(Word* word, SymbolNode* node);
+	static bool errorJudgerE(Word* word, SymbolNode* node);
 };
 
 #endif // !__TABLE_H__

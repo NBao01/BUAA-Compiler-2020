@@ -4,8 +4,6 @@
 #include "symbols.h"
 #include "table.h"
 
-std::vector<Word*> VoidFuncTable;
-
 Word* word;
 int it = 0;	// iterator of wordlist
 
@@ -365,7 +363,6 @@ SymbolNode* Parser::_無返回值函數定義() {
 	SymbolNode* node = new SymbolNode(無返回值函數定義);
 	node->addChild(new SymbolNode(word));	// word->getType() is VOIDTK
 	getsym();
-	VoidFuncTable.push_back(word);			// For the JUDGEMENT of the call of void/non-void function
 	node->addChild(_標識符());
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
@@ -446,14 +443,7 @@ SymbolNode* Parser::_語句() {
 			node->addChild(_賦值語句());
 		}
 		else {
-			bool isVoidFunc = false;
-			for (int i = 0; i < VoidFuncTable.size(); i++) {
-				if (word->getWord() == VoidFuncTable[i]->getWord()) {
-					isVoidFunc = true;
-					break;
-				}
-			}
-			if (isVoidFunc) {
+			if (TableTools::isVoidFunc(&word->getWord())) {
 				node->addChild(_無返回值函數調用語句());
 			}
 			else {
@@ -689,18 +679,29 @@ SymbolNode* Parser::_乘法運算符() {
 
 // ＜有返回值函数调用语句＞ ::= ＜标识符＞'('＜值参数表＞')' 
 SymbolNode* Parser::_有返回值函數調用語句() {
+	Word* wordForErrorDE = word;
+	SymbolNode* nodeForErrorDE;
 	SymbolNode* node = new SymbolNode(有返回值函數調用語句);
 
 	// ERROR_C JUDGER
-	TableTools::errorJudgerC(word);
+	bool errorC = TableTools::errorJudgerC(word);
 	// ERROR_C JUDGER END
 
 	node->addChild(_標識符());
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
-	node->addChild(_值參數表());
+	node->addChild((nodeForErrorDE = _值參數表()));		//node->addChild(_值參數表());
 	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 	getsym();
+
+	// ERROR_D JUDGER
+	bool errorD = errorC ? true : TableTools::errorJudgerD(wordForErrorDE, nodeForErrorDE);
+	// ERROR_D JUDGER END
+
+	// ERROR_E JUDGER
+	errorD ? true : TableTools::errorJudgerE(wordForErrorDE, nodeForErrorDE);
+	// ERROR_E JUDGER
+
 	return node;
 }
 
@@ -771,8 +772,7 @@ SymbolNode* Parser::_字符串() {
 	else {
 		for (int i = 0; i < word->getWord().size(); i++) {
 			char c = word->getWord().at(i);
-			if (!(isalpha(c) || isdigit(c) ||
-				c == '+' || c == '-' || c == '*' || c == '/' || c == '_')) {
+			if (!((c >= 35 && c <= 126) || c == 32 || c == 33)) {
 				ErrorHandler::addErrorItem(ERROR_A, word->getLine());
 				break;
 			} // ILLEGAL CHAR ERROR
@@ -888,18 +888,24 @@ SymbolNode* Parser::_賦值語句() {
 
 // ＜无返回值函数调用语句＞ ::= ＜标识符＞'('＜值参数表＞')'
 SymbolNode* Parser::_無返回值函數調用語句() {
+	Word* wordForErrorDE = word;
+	SymbolNode* nodeForErrorDE;
 	SymbolNode* node = new SymbolNode(無返回值函數調用語句);
-
-	// ERROR_C JUDGER
-	TableTools::errorJudgerC(word);
-	// ERROR_C JUDGER END
-
 	node->addChild(_標識符());
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
-	node->addChild(_值參數表());
+	node->addChild((nodeForErrorDE = _值參數表()));		//node->addChild(_值參數表());
 	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 	getsym();
+
+	// ERROR_D JUDGER
+	bool errorD = TableTools::errorJudgerD(wordForErrorDE, nodeForErrorDE);
+	// ERROR_D JUDGER END
+
+	// ERROR_E JUDGER
+	errorD ? true : TableTools::errorJudgerE(wordForErrorDE, nodeForErrorDE);
+	// ERROR_E JUDGER
+
 	return node;
 }
 
