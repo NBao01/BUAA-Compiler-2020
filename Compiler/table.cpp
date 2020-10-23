@@ -148,6 +148,18 @@ void TableTools::addVars(int it) {
 			dimension++;
 		}
 
+		if (wordlist[i]->getType() == LBRACE) {
+			i++;
+			while (wordlist[i]->getType() != RBRACE) {
+				if (wordlist[i]->getType() == LBRACE) {
+					while (wordlist[i]->getType() != RBRACE) {
+						i++;
+					}
+				}
+				i++;
+			}
+		}
+
 		if (wordlist[i]->getType() == COMMA || wordlist[i]->getType() == SEMICN) {
 			table.push_back(TableItem::newVarTableItem(name, type, retType, dimension));
 			dimension = 0;
@@ -338,6 +350,34 @@ bool TableTools::errorJudgerE(Word* word, SymbolNode* node) {
 	for (int i = 0; i < expectedParamRetType->size(); i++) {
 		if (actualParamRetType->at(i) != expectedParamRetType->at(i)) {
 			ErrorHandler::addErrorItem(ERROR_E, word->getLine());
+			return true;
+		}
+	}
+	return false;
+}
+
+
+bool TableTools::errorJudgerO(SymbolNode* node, int stage) {
+	static bool declareTypeIsChar;
+	if (stage == 1) {
+		if (node->getType() == 類型標識符) {
+			declareTypeIsChar = (node->getChildren()->at(0)->getWord()->getType() == CHARTK);
+		} // In Var Definition
+		else if (node->getType() == 表達式) {
+			declareTypeIsChar = isCharType(node);
+		} // In Switch Statement
+		else {
+			assert(false);
+		}
+	}
+	else if (stage == 2) {
+		assert(node->getType() == 常量);
+		bool realTypeIsChar = (node->getChildren()->at(0)->getType() == 字符);
+		if (declareTypeIsChar ^ realTypeIsChar) {
+			while (node->getChildren()->size() != 0) {
+				node = node->getChildren()->at(0);
+			}
+			ErrorHandler::addErrorItem(ERROR_O, node->getWord()->getLine());
 			return true;
 		}
 	}

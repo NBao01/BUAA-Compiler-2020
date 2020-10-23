@@ -62,6 +62,7 @@ public:
 	static bool errorJudgerC(Word* word);
 	static bool errorJudgerD(Word* word, SymbolNode* node);
 	static bool errorJudgerE(Word* word, SymbolNode* node);
+	static bool errorJudgerO(SymbolNode* node, int stage);
 };
 
 #endif // !__TABLE_H__

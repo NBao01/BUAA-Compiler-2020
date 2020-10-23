@@ -3,6 +3,7 @@
 #include "error.h"
 #include "symbols.h"
 #include "table.h"
+#include <sstream>
 
 Word* word;
 int it = 0;	// iterator of wordlist
@@ -236,12 +237,23 @@ SymbolNode* Parser::_變量定義無初始化() {
 						'{''{'＜常量＞{,＜常量＞}'}'{, '{'＜常量＞{,＜常量＞}'}'}'}'
 */
 SymbolNode* Parser::_變量定義及初始化() {
+	SymbolNode* nodeForErrorO;
+	int numInDim1 = 0, numInDim2 = 0;	// The num of the elements in the array, can have two dimensions.
+	int counter1 = 0, counter2 = 0;		// Counter of the num of the elements.
 	SymbolNode* node = new SymbolNode(變量定義及初始化);
-	node->addChild(_類型標識符());
+	node->addChild((nodeForErrorO = _類型標識符()));
+
+	// ERROR_O JUDGER STAGE 1 
+	TableTools::errorJudgerO(nodeForErrorO, 1);
+	// ERROR_O JUDGER STAGE 1 END
+
 	node->addChild(_標識符());
 	if (word->getType() == LBRACK) {
 		node->addChild(new SymbolNode(word));
 		getsym();
+
+		/* ERROR_N Related */std::stringstream ss(word->getWord()); ss >> numInDim1;
+
 		node->addChild(_無符號整數());
 		node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
 		getsym();
@@ -249,6 +261,9 @@ SymbolNode* Parser::_變量定義及初始化() {
 			// ＜标识符＞'['＜无符号整数＞']''['＜无符号整数＞']'='{''{'＜常量＞{ ,＜常量＞ }'}'{, '{'＜常量＞{ ,＜常量＞ }'}'}'}'
 			node->addChild(new SymbolNode(word));
 			getsym();
+
+			/* ERROR_N Related */std::stringstream ss(word->getWord()); ss >> numInDim2;
+
 			node->addChild(_無符號整數());
 			node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
 			getsym();
@@ -258,29 +273,82 @@ SymbolNode* Parser::_變量定義及初始化() {
 			getsym();
 			node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 			getsym();
-			node->addChild(_常量());
+			node->addChild((nodeForErrorO = _常量()));
+
+			/* ERROR_N Related */counter2++;
+
+			// ERROR_O JUDGER STAGE 2 
+			TableTools::errorJudgerO(nodeForErrorO, 2);
+			// ERROR_O JUDGER STAGE 2 END
+
 			while (word->getType() == COMMA) {
 				node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 				getsym();
-				node->addChild(_常量());
+				node->addChild((nodeForErrorO = _常量()));
+
+				/* ERROR_N Related */counter2++;
+
+				// ERROR_O JUDGER STAGE 2 
+				TableTools::errorJudgerO(nodeForErrorO, 2);
+				// ERROR_O JUDGER STAGE 2 END
+
 			}
 			node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
+
+			// ERROR_N JUDGER
+			if (counter2 != numInDim2) {
+				ErrorHandler::addErrorItem(ERROR_N, word->getLine());
+			}
+			counter1++;
+			counter2 = 0;
+			// ERROR_N JUDGER END
+
 			getsym();
 			while (word->getType() == COMMA) {
 				node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 				getsym();
 				node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 				getsym();
-				node->addChild(_常量());
+				node->addChild((nodeForErrorO = _常量()));
+
+				/* ERROR_N Related */counter2++;
+
+				// ERROR_O JUDGER STAGE 2 
+				TableTools::errorJudgerO(nodeForErrorO, 2);
+				// ERROR_O JUDGER STAGE 2 END
+
 				while (word->getType() == COMMA) {
 					node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 					getsym();
-					node->addChild(_常量());
+					node->addChild((nodeForErrorO = _常量()));
+
+					/* ERROR_N Related */counter2++;
+
+					// ERROR_O JUDGER STAGE 2 
+					TableTools::errorJudgerO(nodeForErrorO, 2);
+					// ERROR_O JUDGER STAGE 2 END
+
 				}
 				node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
+
+				// ERROR_N JUDGER
+				if (counter2 != numInDim2) {
+					ErrorHandler::addErrorItem(ERROR_N, word->getLine());
+				}
+				counter1++;
+				counter2 = 0;
+				// ERROR_N JUDGER END
+
 				getsym();
 			}
 			node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
+
+			// ERROR_N JUDGER
+			if (counter1 != numInDim1) {
+				ErrorHandler::addErrorItem(ERROR_N, word->getLine());
+			}
+			// ERROR_N JUDGER END
+
 			getsym();
 		} 
 		else { // ＜标识符＞'['＜无符号整数＞']'='{'＜常量＞{,＜常量＞}'}'
@@ -288,20 +356,38 @@ SymbolNode* Parser::_變量定義及初始化() {
 			getsym();
 			node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 			getsym();
-			node->addChild(_常量());
+			node->addChild((nodeForErrorO = _常量()));
+			/* ERROR_N Related */counter1++;
+			// ERROR_O JUDGER STAGE 2 
+			TableTools::errorJudgerO(nodeForErrorO, 2);
+			// ERROR_O JUDGER STAGE 2 END
 			while (word->getType() == COMMA) {
 				node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 				getsym();
-				node->addChild(_常量());
+				node->addChild((nodeForErrorO = _常量()));
+				/* ERROR_N Related */counter1++;
+				// ERROR_O JUDGER STAGE 2 
+				TableTools::errorJudgerO(nodeForErrorO, 2);
+				// ERROR_O JUDGER STAGE 2 END
 			}
 			node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
+
+			// ERROR_N JUDGER
+			if (counter1 != numInDim1) {
+				ErrorHandler::addErrorItem(ERROR_N, word->getLine());
+			}
+			// ERROR_N JUDGER END
+
 			getsym();
 		}
 	}
 	else { // ＜标识符＞=＜常量＞
 		node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
 		getsym();
-		node->addChild(_常量());
+		node->addChild((nodeForErrorO = _常量()));
+		// ERROR_O JUDGER STAGE 2 
+		TableTools::errorJudgerO(nodeForErrorO, 2);
+		// ERROR_O JUDGER STAGE 2 END
 	}
 	return node;
 }
@@ -349,9 +435,9 @@ SymbolNode* Parser::_有返回值函數定義() {
 	node->addChild(_參數表());
 	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 	getsym();
-	TableTools::addFunc(it - 1);
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 	getsym();
+	TableTools::addFunc(it - 1);
 	node->addChild(_複合語句());
 	node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
 	getsym();
@@ -369,9 +455,9 @@ SymbolNode* Parser::_無返回值函數定義() {
 	node->addChild(_參數表());
 	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 	getsym();
-	TableTools::addFunc(it - 1);
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 	getsym();
+	TableTools::addFunc(it - 1);
 	node->addChild(_複合語句());
 	node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
 	getsym();
@@ -805,18 +891,31 @@ SymbolNode* Parser::_返回語句() {
 
 // ＜情况语句＞ ::= switch ‘(’＜表达式＞‘)’ ‘{’＜情况表＞＜缺省＞‘}’
 SymbolNode* Parser::_情況語句() {
+	SymbolNode* nodeForErrorO;
 	SymbolNode* node = new SymbolNode(情況語句);
 	node->addChild(new SymbolNode(word));	// word->getType() is SWITCHTK
 	getsym();
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
-	node->addChild(_表達式());
+	node->addChild((nodeForErrorO = _表達式()));
+
+	// ERROR_O JUDGER STAGE 1 
+	TableTools::errorJudgerO(nodeForErrorO, 1);
+	// ERROR_O JUDGER STAGE 1 END
+
 	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 	getsym();
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 	getsym();
 	node->addChild(_情況表());
-	node->addChild(_缺省());
+	if (word->getType() == DEFAULTTK) {
+		node->addChild(_缺省());
+	}
+	else {
+		// ERROR_P JUDGER
+		ErrorHandler::addErrorItem(ERROR_P, word->getLine());
+		// ERROR_P JUDGER END
+	}
 	node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
 	getsym();
 	return node;
@@ -844,10 +943,16 @@ SymbolNode* Parser::_缺省() {
 
 //＜情况子语句＞ :: = case＜常量＞：＜语句＞
 SymbolNode* Parser::_情況子語句() {
+	SymbolNode* nodeForErrorO;
 	SymbolNode* node = new SymbolNode(情況子語句);
 	node->addChild(new SymbolNode(word));	// word->getType() is CASETK
 	getsym();
-	node->addChild(_常量());
+	node->addChild((nodeForErrorO = _常量()));
+
+	// ERROR_O JUDGER STAGE 2 
+	TableTools::errorJudgerO(nodeForErrorO, 2);
+	// ERROR_O JUDGER STAGE 2 END
+
 	node->addChild(new SymbolNode(word));	// word->getType() is COLON
 	getsym();
 	node->addChild(_語句());
@@ -920,9 +1025,9 @@ SymbolNode* Parser::_主函數() {
 	getsym();
 	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 	getsym();
-	TableTools::addFunc(it - 1);
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 	getsym();
+	TableTools::addFunc(it - 1);
 	node->addChild(_複合語句());
 	node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
 	getsym();
