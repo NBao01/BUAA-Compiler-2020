@@ -20,7 +20,7 @@ void LexicalAnalyzer::analyze() {
 		if (!(
 			type == IDENFR || type == INTCON || 
 			type == LSS || type == GRE || type == ASSIGN || 
-			(type >= CONSTTK && type <= RETURNTK)
+			(type >= CONSTTK && type <= RETURNTK) && (c != '\n')
 			)) {
 			//c = fgetc(in);
 			in.get(c);

@@ -53,10 +53,14 @@ SymbolNode* Parser::_常量說明() {
 		getsym();
 		node->addChild(_常量定義());
 		if (word->getType() == SEMICN) {
-			node->addChild(new SymbolNode(word));
+			node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
 			getsym();
 		}
-		else error();
+		else {
+			// ERROR_K JUDGER
+			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			// ERROR_K JUDGER END
+		}
 	}
 	TableTools::addConsts(it - 1);
 	return node;
@@ -168,10 +172,14 @@ SymbolNode* Parser::_變量說明() {
 	while ((word->getType() == INTTK || word->getType() == CHARTK) && peeksym(1)->getType() != LPARENT) {
 		node->addChild(_變量定義());
 		if (word->getType() == SEMICN) {
-			node->addChild(new SymbolNode(word));
+			node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
 			getsym();
 		}
-		else error();
+		else {
+			// ERROR_K JUDGER
+			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			// ERROR_K JUDGER END
+		}
 	}
 	TableTools::addVars(it - 1);
 	return node;
@@ -208,14 +216,28 @@ SymbolNode* Parser::_變量定義無初始化() {
 			node->addChild(new SymbolNode(word));
 			getsym();
 			node->addChild(_無符號整數());
-			node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
-			getsym();
+			if (word->getType() == RBRACK) {
+				node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
+				getsym();
+			}
+			else {
+				// ERROR_M JUDGER
+				ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+				// ERROR_M JUDGER END
+			}
 			if (word->getType() == LBRACK) {
 				node->addChild(new SymbolNode(word));
 				getsym();
 				node->addChild(_無符號整數());
-				node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
-				getsym();
+				if (word->getType() == RBRACK) {
+					node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
+					getsym();
+				}
+				else {
+					// ERROR_M JUDGER
+					ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+					// ERROR_M JUDGER END
+				}
 			}
 		}
 		if (word->getType() == COMMA) {
@@ -255,8 +277,15 @@ SymbolNode* Parser::_變量定義及初始化() {
 		/* ERROR_N Related */std::stringstream ss(word->getWord()); ss >> numInDim1;
 
 		node->addChild(_無符號整數());
-		node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
-		getsym();
+		if (word->getType() == RBRACK) {
+			node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
+			getsym();
+		}
+		else {
+			// ERROR_M JUDGER
+			ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+			// ERROR_M JUDGER END
+		}
 		if (word->getType() == LBRACK) {
 			// ＜标识符＞'['＜无符号整数＞']''['＜无符号整数＞']'='{''{'＜常量＞{ ,＜常量＞ }'}'{, '{'＜常量＞{ ,＜常量＞ }'}'}'}'
 			node->addChild(new SymbolNode(word));
@@ -265,8 +294,15 @@ SymbolNode* Parser::_變量定義及初始化() {
 			/* ERROR_N Related */std::stringstream ss(word->getWord()); ss >> numInDim2;
 
 			node->addChild(_無符號整數());
-			node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
-			getsym();
+			if (word->getType() == RBRACK) {
+				node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
+				getsym();
+			}
+			else {
+				// ERROR_M JUDGER
+				ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+				// ERROR_M JUDGER END
+			}
 			node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
 			getsym();
 			node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
@@ -433,8 +469,15 @@ SymbolNode* Parser::_有返回值函數定義() {
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild(_參數表());
-	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-	getsym();
+	if (word->getType() == RPARENT) {
+		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+		getsym();
+	}
+	else {
+		// ERROR_L JUDGER
+		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		// ERROR_L JUDGER END
+	}
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 	getsym();
 	TableTools::addFunc(it - 1);
@@ -453,8 +496,15 @@ SymbolNode* Parser::_無返回值函數定義() {
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild(_參數表());
-	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-	getsym();
+	if (word->getType() == RPARENT) {
+		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+		getsym();
+	}
+	else {
+		// ERROR_L JUDGER
+		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		// ERROR_L JUDGER END
+	}
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 	getsym();
 	TableTools::addFunc(it - 1);
@@ -536,18 +586,39 @@ SymbolNode* Parser::_語句() {
 				node->addChild(_有返回值函數調用語句());
 			}
 		}
-		node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
-		getsym();
+		if (word->getType() == SEMICN) {
+			node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
+			getsym();
+		}
+		else {
+			// ERROR_K JUDGER
+			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			// ERROR_K JUDGER END
+		}
 	}
 	else if (word->getType() == SCANFTK) {
 		node->addChild(_讀語句());
-		node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
-		getsym();
+		if (word->getType() == SEMICN) {
+			node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
+			getsym();
+		}
+		else {
+			// ERROR_K JUDGER
+			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			// ERROR_K JUDGER END
+		}
 	}
 	else if (word->getType() == PRINTFTK) {
 		node->addChild(_寫語句());
-		node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
-		getsym();
+		if (word->getType() == SEMICN) {
+			node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
+			getsym();
+		}
+		else {
+			// ERROR_K JUDGER
+			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			// ERROR_K JUDGER END
+		}
 	}
 	else if (word->getType() == SWITCHTK) {
 		node->addChild(_情況語句());
@@ -558,8 +629,15 @@ SymbolNode* Parser::_語句() {
 	}
 	else if (word->getType() == RETURNTK) {
 		node->addChild(_返回語句());
-		node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
-		getsym();
+		if (word->getType() == SEMICN) {
+			node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
+			getsym();
+		}
+		else {
+			// ERROR_K JUDGER
+			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			// ERROR_K JUDGER END
+		}
 	}
 	else if (word->getType() == LBRACE) {
 		node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
@@ -584,8 +662,15 @@ SymbolNode* Parser::_循環語句() {
 		node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 		getsym();
 		node->addChild(_條件());
-		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-		getsym();
+		if (word->getType() == RPARENT) {
+			node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+			getsym();
+		}
+		else {
+			// ERROR_L JUDGER
+			ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+			// ERROR_L JUDGER END
+		}
 		node->addChild(_語句());
 	}
 	else if (word->getType() == FORTK) {
@@ -598,15 +683,33 @@ SymbolNode* Parser::_循環語句() {
 		TableTools::errorJudgerC(word);
 		// ERROR_C JUDGER END
 
+		// ERROR_J JUDGER
+		TableTools::errorJudgerJ(word);
+		// ERROR_J JUDGER END
+
 		node->addChild(_標識符());
 		node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
 		getsym();
 		node->addChild(_表達式());
-		node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
-		getsym();
+		if (word->getType() == SEMICN) {
+			node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
+			getsym();
+		}
+		else {
+			// ERROR_K JUDGER
+			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			// ERROR_K JUDGER END
+		}
 		node->addChild(_條件());
-		node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
-		getsym();
+		if (word->getType() == SEMICN) {
+			node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
+			getsym();
+		}
+		else {
+			// ERROR_K JUDGER
+			ErrorHandler::addErrorItem(ERROR_K, word->getLine());
+			// ERROR_K JUDGER END
+		}
 		node->addChild(_標識符());
 		node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
 		getsym();
@@ -614,8 +717,15 @@ SymbolNode* Parser::_循環語句() {
 		node->addChild(new SymbolNode(word));	// word->getType() is PLUS or MINU
 		getsym();
 		node->addChild(_步長());
-		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-		getsym();
+		if (word->getType() == RPARENT) {
+			node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+			getsym();
+		}
+		else {
+			// ERROR_L JUDGER
+			ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+			// ERROR_L JUDGER END
+		}
 		node->addChild(_語句());
 	}
 	return node;
@@ -629,8 +739,15 @@ SymbolNode* Parser::_條件語句() {
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild(_條件());
-	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-	getsym();
+	if (word->getType() == RPARENT) {
+		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+		getsym();
+	}
+	else {
+		// ERROR_L JUDGER
+		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		// ERROR_L JUDGER END
+	}
 	node->addChild(_語句());
 	if (word->getType() == ELSETK) {
 		node->addChild(new SymbolNode(word));	// word->getType() is ELSETK
@@ -642,10 +759,27 @@ SymbolNode* Parser::_條件語句() {
 
 // ＜条件＞ ::= ＜表达式＞＜关系运算符＞＜表达式＞
 SymbolNode* Parser::_條件() {
+	int line; SymbolNode* nodeForErrorF;
 	SymbolNode* node = new SymbolNode(條件);
-	node->addChild(_表達式());
+
+	// ERROR_F JUDGER
+	line = word->getLine();
+	node->addChild((nodeForErrorF = _表達式()));
+	if (TableTools::isCharType(nodeForErrorF)) {
+		ErrorHandler::addErrorItem(ERROR_F, line);
+	}
+	// ERROR_F JUDGER END
+
 	node->addChild(_關係運算符());
-	node->addChild(_表達式());
+
+	// ERROR_F JUDGER
+	line = word->getLine();
+	node->addChild((nodeForErrorF = _表達式()));
+	if (TableTools::isCharType(nodeForErrorF)) {
+		ErrorHandler::addErrorItem(ERROR_F, line);
+	}
+	// ERROR_F JUDGER END
+
 	return node;
 }
 
@@ -718,18 +852,45 @@ SymbolNode* Parser::_因子() {
 		// ERROR_C JUDGER END
 
 		node->addChild(_標識符());
+		int line; SymbolNode* nodeForErrorI;
 		if (word->getType() == LBRACK) {
 			node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
 			getsym();
-			node->addChild(_表達式());
-			node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
-			getsym();
+			// ERROR_I JUDGER
+			line = word->getLine();
+			node->addChild((nodeForErrorI = _表達式()));
+			if (TableTools::isCharType(nodeForErrorI)) {
+				ErrorHandler::addErrorItem(ERROR_I, line);
+			}
+			// ERROR_I JUDGER END
+			if (word->getType() == RBRACK) {
+				node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
+				getsym();
+			}
+			else {
+				// ERROR_M JUDGER
+				ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+				// ERROR_M JUDGER END
+			}
 			if (word->getType() == LBRACK) {
 				node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
 				getsym();
-				node->addChild(_表達式());
-				node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
-				getsym();
+				// ERROR_I JUDGER
+				line = word->getLine();
+				node->addChild((nodeForErrorI = _表達式()));
+				if (TableTools::isCharType(nodeForErrorI)) {
+					ErrorHandler::addErrorItem(ERROR_I, line);
+				}
+				// ERROR_I JUDGER END
+				if (word->getType() == RBRACK) {
+					node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
+					getsym();
+				}
+				else {
+					// ERROR_M JUDGER
+					ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+					// ERROR_M JUDGER END
+				}
 			}
 		}
 	}
@@ -737,8 +898,15 @@ SymbolNode* Parser::_因子() {
 		node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 		getsym();
 		node->addChild(_表達式());
-		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-		getsym();
+		if (word->getType() == RPARENT) {
+			node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+			getsym();
+		}
+		else {
+			// ERROR_L JUDGER
+			ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+			// ERROR_L JUDGER END
+		}
 	}
 	else if (word->getType() == INTCON || word->getType() == PLUS || word->getType() == MINU) {
 		node->addChild(_整數());
@@ -777,8 +945,15 @@ SymbolNode* Parser::_有返回值函數調用語句() {
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild((nodeForErrorDE = _值參數表()));		//node->addChild(_值參數表());
-	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-	getsym();
+	if (word->getType() == RPARENT) {
+		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+		getsym();
+	}
+	else {
+		// ERROR_L JUDGER
+		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		// ERROR_L JUDGER END
+	}
 
 	// ERROR_D JUDGER
 	bool errorD = errorC ? true : TableTools::errorJudgerD(wordForErrorDE, nodeForErrorDE);
@@ -794,7 +969,7 @@ SymbolNode* Parser::_有返回值函數調用語句() {
 // ＜值参数表＞ ::= ＜表达式＞{,＜表达式＞}｜＜空＞
 SymbolNode* Parser::_值參數表() {
 	SymbolNode* node = new SymbolNode(值參數表);
-	if (word->getType() != RPARENT) {
+	if (word->getType() != RPARENT && word->getType() != SEMICN) {
 		node->addChild(_表達式());
 		while (word->getType() == COMMA) {
 			node->addChild(new SymbolNode(word));	// word->getType() is COMMA
@@ -817,9 +992,20 @@ SymbolNode* Parser::_讀語句() {
 	TableTools::errorJudgerC(word);
 	// ERROR_C JUDGER END
 
+	// ERROR_J JUDGER
+	TableTools::errorJudgerJ(word);
+	// ERROR_J JUDGER END
+
 	node->addChild(_標識符());
-	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-	getsym();
+	if (word->getType() == RPARENT) {
+		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+		getsym();
+	}
+	else {
+		// ERROR_L JUDGER
+		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		// ERROR_L JUDGER END
+	}
 	return node;
 }
 
@@ -841,8 +1027,15 @@ SymbolNode* Parser::_寫語句() {
 	else {
 		node->addChild(_表達式());
 	}
-	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-	getsym();
+	if (word->getType() == RPARENT) {
+		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+		getsym();
+	}
+	else {
+		// ERROR_L JUDGER
+		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		// ERROR_L JUDGER END
+	}
 
 	return node;
 }
@@ -881,8 +1074,15 @@ SymbolNode* Parser::_返回語句() {
 			node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 			getsym();
 			node->addChild(_表達式());
-			node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-			getsym();
+			if (word->getType() == RPARENT) {
+				node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+				getsym();
+			}
+			else {
+				// ERROR_L JUDGER
+				ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+				// ERROR_L JUDGER END
+			}
 		}
 	}
 	else error();
@@ -903,8 +1103,15 @@ SymbolNode* Parser::_情況語句() {
 	TableTools::errorJudgerO(nodeForErrorO, 1);
 	// ERROR_O JUDGER STAGE 1 END
 
-	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-	getsym();
+	if (word->getType() == RPARENT) {
+		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+		getsym();
+	}
+	else {
+		// ERROR_L JUDGER
+		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		// ERROR_L JUDGER END
+	}
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 	getsym();
 	node->addChild(_情況表());
@@ -964,25 +1171,56 @@ SymbolNode* Parser::_情況子語句() {
 *					＜标识符＞'['＜表达式＞']''['＜表达式＞']' =＜表达式＞
 */
 SymbolNode* Parser::_賦值語句() {
+	int line; SymbolNode* nodeForErrorI;
 	SymbolNode* node = new SymbolNode(賦值語句);
 
 	// ERROR_C JUDGER
 	TableTools::errorJudgerC(word);
 	// ERROR_C JUDGER END
 
+	// ERROR_J JUDGER
+	TableTools::errorJudgerJ(word);
+	// ERROR_J JUDGER END
+
 	node->addChild(_標識符());
 	if (word->getType() == LBRACK) {
 		node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
 		getsym();
-		node->addChild(_表達式());
-		node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
-		getsym();
+		// ERROR_I JUDGER
+		line = word->getLine();
+		node->addChild((nodeForErrorI = _表達式()));
+		if (TableTools::isCharType(nodeForErrorI)) {
+			ErrorHandler::addErrorItem(ERROR_I, line);
+		}
+		// ERROR_I JUDGER END
+		if (word->getType() == RBRACK) {
+			node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
+			getsym();
+		}
+		else {
+			// ERROR_M JUDGER
+			ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+			// ERROR_M JUDGER END
+		}
 		if (word->getType() == LBRACK) {
 			node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
 			getsym();
-			node->addChild(_表達式());
-			node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
-			getsym();
+			// ERROR_I JUDGER
+			line = word->getLine();
+			node->addChild((nodeForErrorI = _表達式()));
+			if (TableTools::isCharType(nodeForErrorI)) {
+				ErrorHandler::addErrorItem(ERROR_I, line);
+			}
+			// ERROR_I JUDGER END
+			if (word->getType() == RBRACK) {
+				node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
+				getsym();
+			}
+			else {
+				// ERROR_M JUDGER
+				ErrorHandler::addErrorItem(ERROR_M, word->getLine());
+				// ERROR_M JUDGER END
+			}
 		}
 	}
 	node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
@@ -1000,8 +1238,15 @@ SymbolNode* Parser::_無返回值函數調用語句() {
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild((nodeForErrorDE = _值參數表()));		//node->addChild(_值參數表());
-	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-	getsym();
+	if (word->getType() == RPARENT) {
+		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+		getsym();
+	}
+	else {
+		// ERROR_L JUDGER
+		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		// ERROR_L JUDGER END
+	}
 
 	// ERROR_D JUDGER
 	bool errorD = TableTools::errorJudgerD(wordForErrorDE, nodeForErrorDE);
@@ -1023,8 +1268,15 @@ SymbolNode* Parser::_主函數() {
 	getsym();
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
-	node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
-	getsym();
+	if (word->getType() == RPARENT) {
+		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+		getsym();
+	}
+	else {
+		// ERROR_L JUDGER
+		ErrorHandler::addErrorItem(ERROR_L, word->getLine());
+		// ERROR_L JUDGER END
+	}
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 	getsym();
 	TableTools::addFunc(it - 1);

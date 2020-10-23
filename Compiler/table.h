@@ -62,6 +62,7 @@ public:
 	static bool errorJudgerC(Word* word);
 	static bool errorJudgerD(Word* word, SymbolNode* node);
 	static bool errorJudgerE(Word* word, SymbolNode* node);
+	static bool errorJudgerJ(Word* word);
 	static bool errorJudgerO(SymbolNode* node, int stage);
 };
 

@@ -109,6 +109,7 @@ void TableTools::addConsts(int it) {
 			for (int j = table.size() - 1; j >= 0; j--) {
 				if (table[j]->isSameScope(TableItem::scope_i) && table[j]->isSameName(name)) {
 					ErrorHandler::addErrorItem(ERROR_B, wordlist[i]->getLine());
+					break;
 				}
 			}
 			// ERROR_B JUDGER END
@@ -139,6 +140,7 @@ void TableTools::addVars(int it) {
 			for (int j = table.size() - 1; j >= 0; j--) {
 				if (table[j]->isSameScope(TableItem::scope_i) && table[j]->isSameName(name)) {
 					ErrorHandler::addErrorItem(ERROR_B, wordlist[i]->getLine());
+					break;
 				}
 			}
 			// ERROR_B JUDGER END
@@ -217,6 +219,7 @@ void TableTools::addFunc(int it) {
 				for (int j = table.size() - 1; j >= 0; j--) {
 					if (table[j]->isSameScope(TableItem::scope_i) && table[j]->isSameName(name)) {
 						ErrorHandler::addErrorItem(ERROR_B, wordlist[i]->getLine());
+						break;
 					}
 				}
 				// ERROR_B JUDGER END
@@ -351,6 +354,26 @@ bool TableTools::errorJudgerE(Word* word, SymbolNode* node) {
 		if (actualParamRetType->at(i) != expectedParamRetType->at(i)) {
 			ErrorHandler::addErrorItem(ERROR_E, word->getLine());
 			return true;
+		}
+	}
+	return false;
+}
+
+/* Input: Word_of_標識符 in 賦值語句
+* Return: true when detected Error_J, false when not.
+*/
+bool TableTools::errorJudgerJ(Word* word) {
+	assert(word->getType() == IDENFR);
+	for (int i = table.size() - 1; i >= 0; i--) {
+		if ((table[i]->isSameScope(TableItem::scope_i) || table[i]->isSameScope(0))
+			&& table[i]->isSameName(&word->getWord())) {
+			if (table[i]->getType() == CONST) {
+				ErrorHandler::addErrorItem(ERROR_J, word->getLine());
+				return true;
+			}
+			else {
+				break;
+			}
 		}
 	}
 	return false;
