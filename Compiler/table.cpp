@@ -257,7 +257,7 @@ bool TableTools::isCharType(SymbolNode* node) {
 		node = node->getChildren()->at(0);
 		if (node->getType() == 項 && node->getChildren()->size() == 1) {
 			node = node->getChildren()->at(0);
-			if (node->getType() == 因子 && node->getChildren()->size() == 1) {
+			if (node->getType() == 因子) {
 				node = node->getChildren()->at(0);
 				if (node->getType() == 標識符) {
 					node = node->getChildren()->at(0);
@@ -353,6 +353,50 @@ bool TableTools::errorJudgerE(Word* word, SymbolNode* node) {
 	for (int i = 0; i < expectedParamRetType->size(); i++) {
 		if (actualParamRetType->at(i) != expectedParamRetType->at(i)) {
 			ErrorHandler::addErrorItem(ERROR_E, word->getLine());
+			return true;
+		}
+	}
+	return false;
+}
+
+/* 
+* stage = 1 : Mark the type of the function that is analyzed from parser.
+* stage = 2 : Send the type of the return statement that got from parser.
+* stage = 3 : Judge if the function is non-void with no return statement.
+*/
+bool TableTools::errorJudgerGH(int stage, int retType, int line) {
+	static int funcType = -1;
+	static int retCount = 0;
+	if (stage == 1) {
+		funcType = retType;
+		retCount = 0;
+	}
+	if (stage == 2) {
+		if (funcType == VOID) {
+			if (retType != VOID) {
+				ErrorHandler::addErrorItem(ERROR_G, line);
+				return true;
+			}
+		}
+		else if (funcType == INT) {
+			retCount++;
+			if (retType != INT) {
+				ErrorHandler::addErrorItem(ERROR_H, line);
+				return true;
+			}
+		}
+		else if (funcType == CHAR) {
+			retCount++;
+			if (retType != CHAR) {
+				ErrorHandler::addErrorItem(ERROR_H, line);
+				return true;
+			}
+		}
+	}
+	if (stage == 3) {
+		assert(funcType == INT || funcType == CHAR);
+		if (retCount == 0) {
+			ErrorHandler::addErrorItem(ERROR_H, line);
 			return true;
 		}
 	}

@@ -464,6 +464,16 @@ SymbolNode* Parser::_常量() {
 
 // ＜有返回值函数定义＞ ::= ＜声明头部＞'('＜参数表＞')' '{'＜复合语句＞'}'
 SymbolNode* Parser::_有返回值函數定義() {
+
+	// ERROR_GH JUDGER STAGE 1 
+	if (word->getType() == INTTK) {
+		TableTools::errorJudgerGH(1, INT);
+	}
+	else if (word->getType() == CHARTK) {
+		TableTools::errorJudgerGH(1, CHAR);
+	}
+	// ERROR_GH JUDGER STAGE 1 END
+
 	SymbolNode* node = new SymbolNode(有返回值函數定義);
 	node->addChild(_聲明頭部());
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
@@ -482,6 +492,11 @@ SymbolNode* Parser::_有返回值函數定義() {
 	getsym();
 	TableTools::addFunc(it - 1);
 	node->addChild(_複合語句());
+
+	// ERROR_GH JUDGER STAGE 3
+	TableTools::errorJudgerGH(3, 0, word->getLine());
+	// ERROR_GH JUDGER STAGE 3 END
+
 	node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
 	getsym();
 	return node;
@@ -489,6 +504,11 @@ SymbolNode* Parser::_有返回值函數定義() {
 
 // ＜无返回值函数定义＞ ::= void＜标识符＞'('＜参数表＞')''{'＜复合语句＞'}'
 SymbolNode* Parser::_無返回值函數定義() {
+
+	// ERROR_GH JUDGER STAGE 1 
+	TableTools::errorJudgerGH(1, VOID);
+	// ERROR_GH JUDGER STAGE 1 END
+
 	SymbolNode* node = new SymbolNode(無返回值函數定義);
 	node->addChild(new SymbolNode(word));	// word->getType() is VOIDTK
 	getsym();
@@ -1071,9 +1091,19 @@ SymbolNode* Parser::_返回語句() {
 		node->addChild(new SymbolNode(word));
 		getsym();
 		if (word->getType() == LPARENT) {
+			int retType; SymbolNode* nodeForErrorGH = nullptr;
 			node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 			getsym();
-			node->addChild(_表達式());
+
+			if (word->getType() == RPARENT) {
+				// ERROR_GH JUDGER STAGE 2
+				TableTools::errorJudgerGH(2, -1, word->getLine()); // "return ();" ERROR
+				// ERROR_GH JUDGER STAGE 2 END
+			}
+			else {
+				node->addChild((nodeForErrorGH = _表達式()));
+			}
+
 			if (word->getType() == RPARENT) {
 				node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 				getsym();
@@ -1083,6 +1113,19 @@ SymbolNode* Parser::_返回語句() {
 				ErrorHandler::addErrorItem(ERROR_L, word->getLine());
 				// ERROR_L JUDGER END
 			}
+
+			// ERROR_GH JUDGER STAGE 2
+			if (nodeForErrorGH != nullptr) {
+				retType = TableTools::isCharType(nodeForErrorGH) ? CHAR : INT;
+				TableTools::errorJudgerGH(2, retType, word->getLine());
+			}
+			// ERROR_GH JUDGER STAGE 2 END
+
+		}
+		else {
+			// ERROR_GH JUDGER STAGE 2
+			TableTools::errorJudgerGH(2, VOID, word->getLine());
+			// ERROR_GH JUDGER STAGE 2 END
 		}
 	}
 	else error();
@@ -1261,6 +1304,11 @@ SymbolNode* Parser::_無返回值函數調用語句() {
 
 // ＜主函数＞ ::= void main‘(’‘)’ ‘{’＜复合语句＞‘}’
 SymbolNode* Parser::_主函數() {
+
+	// ERROR_GH JUDGER STAGE 1 
+	TableTools::errorJudgerGH(1, VOID);
+	// ERROR_GH JUDGER STAGE 1 END
+
 	SymbolNode* node = new SymbolNode(主函數);
 	node->addChild(new SymbolNode(word));	// word->getType() is VOIDTK
 	getsym();

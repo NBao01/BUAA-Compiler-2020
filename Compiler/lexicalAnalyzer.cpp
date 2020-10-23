@@ -17,11 +17,16 @@ void LexicalAnalyzer::analyze() {
 	//FILE* in = fopen("testfile.txt", "r");
 	std::ifstream in("testfile.txt", std::ios_base::in);
 	while (in.peek() != EOF) {
-		if (!(
-			type == IDENFR || type == INTCON || 
+		if (!
+			/* A Complex Bool Expression */
+			((type == IDENFR || type == INTCON || 
 			type == LSS || type == GRE || type == ASSIGN || 
-			(type >= CONSTTK && type <= RETURNTK) && (c != '\n')
-			)) {
+			(type >= CONSTTK && type <= RETURNTK)) && (c != '\n'))
+			/* When type satisfy these requirement and c is not the line seperator,
+			 * It is needed to ungetc (a.k.a. hold the char c for next word).
+			 * So when this bool is false (!bool is true), getchar.
+			 */
+			) {
 			//c = fgetc(in);
 			in.get(c);
 		} // These are the tokens that need to ungetc (a.k.a. hold the char c for next word).
