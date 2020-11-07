@@ -144,6 +144,8 @@
   <ItemGroup>
     <ClInclude Include="abstractSyntaxTree.h" />
     <ClInclude Include="error.h" />
+    <ClInclude Include="instructionDefinitions.h" />
+    <ClInclude Include="ir.h" />
     <ClInclude Include="keywordJudger.h" />
     <ClInclude Include="lexicalAnalyzer.h" />
     <ClInclude Include="parser.h" />
@@ -157,6 +159,8 @@
   <ItemGroup>
     <ClCompile Include="abstractSyntaxTree.cpp" />
     <ClCompile Include="error.cpp" />
+    <ClCompile Include="instructionDefinitions.cpp" />
+    <ClCompile Include="ir.cpp" />
     <ClCompile Include="keywordJudger.cpp" />
     <ClCompile Include="lexicalAnalyzer.cpp" />
     <ClCompile Include="Main.cpp" />

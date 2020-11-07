@@ -4,6 +4,8 @@
 #include "symbols.h"
 #include "table.h"
 #include <sstream>
+#include "ir.h"
+#include "instructionDefinitions.h"
 
 Word* word;
 Word* prevWord;
@@ -1020,6 +1022,7 @@ SymbolNode* Parser::_讀語句() {
 	TableTools::errorJudgerJ(word);
 	// ERROR_J JUDGER END
 
+	IrGenerator::addScanIr(&word->getWord());
 	node->addChild(_標識符());
 	if (word->getType() == RPARENT) {
 		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
@@ -1041,7 +1044,9 @@ SymbolNode* Parser::_寫語句() {
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	if (word->getType() == STRCON) {
-		node->addChild(_字符串());
+		std::string* str = nullptr;
+		node->addChild(_字符串(&str));
+		IrGenerator::addPrintStrIr(str);
 		if (word->getType() == COMMA) {
 			node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 			getsym();
@@ -1065,7 +1070,7 @@ SymbolNode* Parser::_寫語句() {
 }
 
 // ＜字符串＞ ::= "｛十进制编码为32,33,35-126的ASCII字符｝" 
-SymbolNode* Parser::_字符串() {
+SymbolNode* Parser::_字符串(std::string** str) {
 	SymbolNode* node = new SymbolNode(字符串);
 
 	// ERROR_A JUDGER
@@ -1083,6 +1088,7 @@ SymbolNode* Parser::_字符串() {
 	}
 	// ERROR_A JUDGER END
 
+	*str = &word->getWord();
 	node->addChild(new SymbolNode(word));
 	getsym();
 	return node;

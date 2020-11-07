@@ -42,7 +42,7 @@ public:
 	static SymbolNode* _值參數表();
 	static SymbolNode* _讀語句();
 	static SymbolNode* _寫語句();
-	static SymbolNode* _字符串();
+	static SymbolNode* _字符串(std::string** str);
 	static SymbolNode* _返回語句();
 	static SymbolNode* _情況語句();
 	static SymbolNode* _情況表();

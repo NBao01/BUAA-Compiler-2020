@@ -48,6 +48,12 @@
     <ClInclude Include="table.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ir.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="instructionDefinitions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="tokens.cpp">
@@ -84,6 +90,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="table.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ir.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="instructionDefinitions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
