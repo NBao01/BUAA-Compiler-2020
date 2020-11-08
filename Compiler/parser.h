@@ -12,8 +12,11 @@ public:
 	static SymbolNode* _常量說明();
 	static SymbolNode* _常量定義();
 	static SymbolNode* _整數();
+	static SymbolNode* _整數(int* num);
 	static SymbolNode* _無符號整數();
+	static SymbolNode* _無符號整數(int* num);
 	static SymbolNode* _字符();
+	static SymbolNode* _字符(std::string** str);
 	static SymbolNode* _變量說明();
 	static SymbolNode* _變量定義();
 	static SymbolNode* _變量定義無初始化();
@@ -32,11 +35,14 @@ public:
 	static SymbolNode* _條件語句();
 	static SymbolNode* _條件();
 	static SymbolNode* _表達式();
+	static SymbolNode* _表達式(int* type, int* num, std::string** str);
 	static SymbolNode* _步長();
 	static SymbolNode* _關係運算符();
 	static SymbolNode* _項();
+	static SymbolNode* _項(int* type, int* num, std::string** str);
 	static SymbolNode* _加法運算符();
 	static SymbolNode* _因子();
+	static SymbolNode* _因子(int* type, int* num, std::string** str);
 	static SymbolNode* _乘法運算符();
 	static SymbolNode* _有返回值函數調用語句();
 	static SymbolNode* _值參數表();

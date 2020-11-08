@@ -76,14 +76,50 @@ void IrGenerator::output() {
 		int op = (*it)->getOp();
 		if (op == IR_PRINT) {
 			if ((*it)->getLopType() == STRTYPE) {
-				out << irInstructions[op] << "\"" << *(*it)->getLop() << "\"" << std::endl;
+				out << irInstructions[op] << " " << "\"" << *(*it)->getLop() << "\"" << std::endl;
 			}
 			else if ((*it)->getLopType() == IDTYPE) {
-				out << irInstructions[op] << *(*it)->getLop() << std::endl;
+				out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;
 			}
 		}
 		else if (op == IR_SCAN) {
-			out << irInstructions[op] << *(*it)->getLop() << std::endl;
+			out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;
+		}
+		else if (op == IR_ASSIGN) {
+			out << irInstructions[op] << " ";
+			if ((*it)->getLopType() == INTTYPE) {
+				out << (*it)->getLopInt();
+			}
+			else if ((*it)->getLopType() == CHTYPE) {
+				out << "'" << *(*it)->getLop() << "'";
+			}
+			else {
+				out << *(*it)->getLop();
+			}
+			out << " " << *(*it)->getRes() << std::endl;
+		}
+		else if (op >= IR_ADD && op <= IR_DIV) {
+			out << irInstructions[op] << " ";
+			if ((*it)->getLopType() == INTTYPE) {
+				out << (*it)->getLopInt();
+			}
+			else if ((*it)->getLopType() == CHTYPE) {
+				out << "'" << *(*it)->getLop() << "'";
+			}
+			else {
+				out << *(*it)->getLop();
+			}
+			out << " ";
+			if ((*it)->getRopType() == INTTYPE) {
+				out << (*it)->getRopInt();
+			}
+			else if ((*it)->getRopType() == CHTYPE) {
+				out << "'" << *(*it)->getRop() << "'";
+			}
+			else {
+				out << *(*it)->getRop();
+			}
+			out << " " << *(*it)->getRes() << std::endl;
 		}
 	}
 	out.close();
@@ -93,12 +129,16 @@ void IrGenerator::addPrintStrIr(std::string* str) {
 	IrList.push_back(new IrItem(IR_PRINT, STRTYPE, str));
 }
 
-void IrGenerator::addPrintExpIr(std::string* str) {
-	IrList.push_back(new IrItem(IR_PRINT, IDTYPE, str));
+void IrGenerator::addPrintExpIr(int type, int num, std::string* str) {
+	IrList.push_back(new IrItem(IR_PRINT, type, NOTYPE, num, 0, str, nullptr, nullptr));
 }
 
 void IrGenerator::addScanIr(std::string* str) {
 	IrList.push_back(new IrItem(IR_SCAN, IDTYPE, str));
+}
+
+void IrGenerator::addAssignIr(std::string* res, int lopType, int lopInt, std::string* lop) {
+	IrList.push_back(new IrItem(IR_ASSIGN, lopType, NOTYPE, lopInt, 0, lop, nullptr, res));
 }
 
 std::string* IrGenerator::addNormalIr(int op, int lopType, int ropType, int lopInt, int ropInt,

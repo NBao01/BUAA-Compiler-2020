@@ -2,10 +2,11 @@
 
 const std::string irInstructions[] = {
 	" ",
-	"add ",
-	"sub ",
-	"mul ",
-	"div ",
-	"print ",
-	"scan "
+	"add",
+	"sub",
+	"mul",
+	"div",
+	"print",
+	"scan",
+	"assign"
 };

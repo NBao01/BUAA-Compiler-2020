@@ -6,6 +6,7 @@
 #include <sstream>
 #include "ir.h"
 #include "instructionDefinitions.h"
+#include <cassert>
 
 Word* word;
 Word* prevWord;
@@ -142,9 +143,35 @@ SymbolNode* Parser::_整數() {
 	return node;
 }
 
+/* ＜整数＞ ::= ［＋｜－］＜无符号整数＞ */
+SymbolNode* Parser::_整數(int* num) {
+	SymbolNode* node = new SymbolNode(整數);
+	int sign = 1;
+	if (word->getType() == PLUS || word->getType() == MINU) {
+		if (word->getType() == MINU) {
+			sign = -1;
+		}
+		node->addChild(new SymbolNode(word));	// word->type is PLUS or MINU
+		getsym();
+	}
+	node->addChild(_無符號整數(num));
+	*num = sign * (*num);
+	return node;
+}
+
 /* ＜无符号整数＞ ::= ＜数字＞｛＜数字＞｝ */
 SymbolNode* Parser::_無符號整數() {
 	SymbolNode* node = new SymbolNode(無符號整數);
+	node->addChild(new SymbolNode(word));	// word->type is INTCON
+	getsym();
+	return node;
+}
+
+/* ＜无符号整数＞ ::= ＜数字＞｛＜数字＞｝ */
+SymbolNode* Parser::_無符號整數(int* num) {
+	SymbolNode* node = new SymbolNode(無符號整數);
+	std::stringstream ss(word->getWord());
+	ss >> *num;
 	node->addChild(new SymbolNode(word));	// word->type is INTCON
 	getsym();
 	return node;
@@ -167,6 +194,29 @@ SymbolNode* Parser::_字符() {
 	}
 	// ERROR_A JUDGER END
 
+	node->addChild(new SymbolNode(word));	// word->type is CHARCON
+	getsym();
+	return node;
+}
+
+/* ＜字符＞ ::= '＜加法运算符＞'｜'＜乘法运算符＞'｜'＜字母＞'｜'＜数字＞' */
+SymbolNode* Parser::_字符(std::string** str) {
+	SymbolNode* node = new SymbolNode(字符);
+
+	// ERROR_A JUDGER
+	if (word->getWord().size() == 0) {
+		ErrorHandler::addErrorItem(ERROR_A, word->getLine());
+	} // NO CHAR ERROR
+	else {
+		char c = word->getWord().at(0);
+		if (!(isalpha(c) || isdigit(c) ||
+			c == '+' || c == '-' || c == '*' || c == '/' || c == '_')) {
+			ErrorHandler::addErrorItem(ERROR_A, word->getLine());
+		} // ILLEGAL CHAR ERROR
+	}
+	// ERROR_A JUDGER END
+
+	*str = &word->getWord();
 	node->addChild(new SymbolNode(word));	// word->type is CHARCON
 	getsym();
 	return node;
@@ -824,6 +874,44 @@ SymbolNode* Parser::_表達式() {
 	return node;
 }
 
+// ＜表达式＞ ::= ［＋｜－］＜项＞{＜加法运算符＞＜项＞}
+SymbolNode* Parser::_表達式(int* type, int* num, std::string** str) {
+	int _type = 0, _num = 0;
+	std::string* _str = nullptr;
+	SymbolNode* node = new SymbolNode(表達式);
+	bool minu = false;
+	if (word->getType() == PLUS || word->getType() == MINU) {
+		if (word->getType() == MINU) {
+			minu = true;
+		}
+		node->addChild(new SymbolNode(word));	// word->getType() is PLUS or MINU
+		getsym();
+	}
+	node->addChild(_項(type, num, str));
+	if (minu) {
+		*str = IrGenerator::addNormalIr(IR_SUB, INTTYPE, *type, 0, *num, nullptr, *str);
+		*type = IDTYPE;
+		*num = 0;
+	}
+	while (word->getType() == PLUS || word->getType() == MINU) {
+		if (word->getType() == PLUS) {
+			node->addChild(_加法運算符());
+			node->addChild(_項(&_type, &_num, &_str));
+			*str = IrGenerator::addNormalIr(IR_ADD, *type, _type, *num, _num, *str, _str);
+			*type = IDTYPE;
+			*num = 0;
+		}
+		if (word->getType() == MINU) {
+			node->addChild(_加法運算符());
+			node->addChild(_項(&_type, &_num, &_str));
+			*str = IrGenerator::addNormalIr(IR_SUB, *type, _type, *num, _num, *str, _str);
+			*type = IDTYPE;
+			*num = 0;
+		}
+	}
+	return node;
+}
+
 // ＜步长＞::= ＜无符号整数＞  
 SymbolNode* Parser::_步長() {
 	SymbolNode* node = new SymbolNode(步長);
@@ -850,6 +938,31 @@ SymbolNode* Parser::_項() {
 	while (word->getType() == MULT || word->getType() == DIV) {
 		node->addChild(_乘法運算符());
 		node->addChild(_因子());
+	}
+	return node;
+}
+
+// ＜项＞ ::= ＜因子＞{＜乘法运算符＞＜因子＞}
+SymbolNode* Parser::_項(int* type, int* num, std::string** str) {
+	int _type = 0, _num = 0;
+	std::string* _str = nullptr;
+	SymbolNode* node = new SymbolNode(項);
+	node->addChild(_因子(type, num, str));
+	while (word->getType() == MULT || word->getType() == DIV) {
+		if (word->getType() == MULT) {
+			node->addChild(_乘法運算符());
+			node->addChild(_因子(&_type, &_num, &_str));
+			*str = IrGenerator::addNormalIr(IR_MUL, *type, _type, *num, _num, *str, _str);
+			*type = IDTYPE;
+			*num = 0;
+		}
+		else if (word->getType() == DIV) {
+			node->addChild(_乘法運算符());
+			node->addChild(_因子(&_type, &_num, &_str));
+			*str = IrGenerator::addNormalIr(IR_DIV, *type, _type, *num, _num, *str, _str);
+			*type = IDTYPE;
+			*num = 0;
+		}
 	}
 	return node;
 }
@@ -939,6 +1052,91 @@ SymbolNode* Parser::_因子() {
 	}
 	else if (word->getType() == CHARCON) {
 		node->addChild(_字符());
+	}
+	else if (word->getType() == IDENFR) {
+		node->addChild(_有返回值函數調用語句());
+	}
+	return node;
+}
+
+/* ＜因子＞ ::= ＜标识符＞｜＜标识符＞'['＜表达式＞']'|
+*				＜标识符＞'['＜表达式＞']''['＜表达式＞']'|'('＜表达式＞')'｜
+*				＜整数＞|＜字符＞｜＜有返回值函数调用语句＞
+*/
+SymbolNode* Parser::_因子(int* type, int* num, std::string** str) {
+	SymbolNode* node = new SymbolNode(因子);
+	if (word->getType() == IDENFR && peeksym(0)->getType() != LPARENT) {
+
+		// ERROR_C JUDGER
+		TableTools::errorJudgerC(word);
+		// ERROR_C JUDGER END
+
+		*type = IDTYPE;
+		*str = &word->getWord();
+		node->addChild(_標識符());
+		int line; SymbolNode* nodeForErrorI;
+		if (word->getType() == LBRACK) {
+			node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
+			getsym();
+			// ERROR_I JUDGER
+			line = word->getLine();
+			node->addChild((nodeForErrorI = _表達式()));
+			if (TableTools::isCharType(nodeForErrorI)) {
+				ErrorHandler::addErrorItem(ERROR_I, line);
+			}
+			// ERROR_I JUDGER END
+			if (word->getType() == RBRACK) {
+				node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
+				getsym();
+			}
+			else {
+				// ERROR_M JUDGER
+				ErrorHandler::addErrorItem(ERROR_M, prevWord->getLine());
+				// ERROR_M JUDGER END
+			}
+			if (word->getType() == LBRACK) {
+				node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
+				getsym();
+				// ERROR_I JUDGER
+				line = word->getLine();
+				node->addChild((nodeForErrorI = _表達式()));
+				if (TableTools::isCharType(nodeForErrorI)) {
+					ErrorHandler::addErrorItem(ERROR_I, line);
+				}
+				// ERROR_I JUDGER END
+				if (word->getType() == RBRACK) {
+					node->addChild(new SymbolNode(word));	// word->getType() is RBRACK
+					getsym();
+				}
+				else {
+					// ERROR_M JUDGER
+					ErrorHandler::addErrorItem(ERROR_M, prevWord->getLine());
+					// ERROR_M JUDGER END
+				}
+			}
+		}
+	}
+	else if (word->getType() == LPARENT) {
+		node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
+		getsym();
+		node->addChild(_表達式(type, num, str));
+		if (word->getType() == RPARENT) {
+			node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+			getsym();
+		}
+		else {
+			// ERROR_L JUDGER
+			ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
+			// ERROR_L JUDGER END
+		}
+	}
+	else if (word->getType() == INTCON || word->getType() == PLUS || word->getType() == MINU) {
+		*type = INTTYPE;
+		node->addChild(_整數(num));
+	}
+	else if (word->getType() == CHARCON) {
+		*type = CHTYPE;
+		node->addChild(_字符(str));
 	}
 	else if (word->getType() == IDENFR) {
 		node->addChild(_有返回值函數調用語句());
@@ -1038,6 +1236,8 @@ SymbolNode* Parser::_讀語句() {
 
 // ＜写语句＞ ::= printf '(' ＜字符串＞,＜表达式＞ ')'| printf '('＜字符串＞ ')'| printf '('＜表达式＞')' 
 SymbolNode* Parser::_寫語句() {
+	int type = NOTYPE, num = 0;
+	std::string* str = nullptr;
 	SymbolNode* node = new SymbolNode(寫語句);
 	node->addChild(new SymbolNode(word));	// word->getType() is PRINTFTK
 	getsym();
@@ -1050,11 +1250,13 @@ SymbolNode* Parser::_寫語句() {
 		if (word->getType() == COMMA) {
 			node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 			getsym();
-			node->addChild(_表達式());
+			node->addChild(_表達式(&type, &num, &str));
+			IrGenerator::addPrintExpIr(type, num, str);
 		}
 	}
 	else {
-		node->addChild(_表達式());
+		node->addChild(_表達式(&type, &num, &str));
+		IrGenerator::addPrintExpIr(type, num, str);
 	}
 	if (word->getType() == RPARENT) {
 		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
@@ -1224,6 +1426,8 @@ SymbolNode* Parser::_情況子語句() {
 *					＜标识符＞'['＜表达式＞']''['＜表达式＞']' =＜表达式＞
 */
 SymbolNode* Parser::_賦值語句() {
+	int type = NOTYPE, num = 0;
+	std::string* str = nullptr, * res = nullptr;
 	int line; SymbolNode* nodeForErrorI;
 	SymbolNode* node = new SymbolNode(賦值語句);
 
@@ -1235,6 +1439,7 @@ SymbolNode* Parser::_賦值語句() {
 	TableTools::errorJudgerJ(word);
 	// ERROR_J JUDGER END
 
+	res = &word->getWord();
 	node->addChild(_標識符());
 	if (word->getType() == LBRACK) {
 		node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
@@ -1278,7 +1483,8 @@ SymbolNode* Parser::_賦值語句() {
 	}
 	node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
 	getsym();
-	node->addChild(_表達式());
+	node->addChild(_表達式(&type, &num, &str));
+	IrGenerator::addAssignIr(res, type, num, str);
 	return node;
 }
 
