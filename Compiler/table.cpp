@@ -4,6 +4,7 @@
 #include "tokens.h"
 #include <iostream>
 #include "error.h"
+#include <sstream>
 
 std::vector<TableItem*> table;
 
@@ -84,6 +85,10 @@ int TableItem::getType() {
 
 int TableItem::getRetType() {
 	return retType;
+}
+
+int TableItem::getScope() {
+	return scope;
 }
 
 std::vector<int>* TableItem::getParamsRetType() {
@@ -459,4 +464,40 @@ bool TableTools::errorJudgerO(SymbolNode* node, int stage) {
 		}
 	}
 	return false;
+}
+
+void TableTools::search(std::string* str, int* type, std::string** label) {
+	for (int i = table.size() - 1; i >= 0; i--) {
+		if ((table[i]->isSameScope(TableItem::scope_i) || table[i]->isSameScope(0)) &&
+			table[i]->isSameName(str)) {
+			*type = table[i]->getRetType();
+			if (table[i]->getScope() == 0) {
+				*label = new std::string("global_");
+			}
+			else {
+				std::stringstream ss;
+				std::string scope_num;
+				ss << table[i]->getScope();
+				ss >> scope_num;
+				*label = new std::string("scope_" + scope_num + "_");
+			}
+
+			if (table[i]->getType() == CONST) {
+				**label += "const_";
+			}
+			else if (table[i]->getType() == VAR) {
+				**label += "var_";
+			}
+
+			if (table[i]->getRetType() == INT) {
+				**label += "int_";
+			}
+			else if (table[i]->getRetType() == CHAR) {
+				**label += "char_";
+			}
+
+			**label += *str;
+			return;
+		}
+	}
 }

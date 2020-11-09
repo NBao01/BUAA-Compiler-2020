@@ -5,8 +5,9 @@
 #include "table.h"
 #include <sstream>
 #include "ir.h"
-#include "instructionDefinitions.h"
+#include "irDefinitions.h"
 #include <cassert>
+#include "mips.h"
 
 Word* word;
 Word* prevWord;
@@ -77,12 +78,14 @@ SymbolNode* Parser::_常量說明() {
 *                  char＜标识符＞＝＜字符＞{,＜标识符＞＝＜字符＞}
 */
 SymbolNode* Parser::_常量定義() {
+	int type = 0, num = 0;
+	std::string* str = nullptr;
 	SymbolNode* node = new SymbolNode(常量定義);
 	if (word->getType() == INTTK) {
 		node->addChild(new SymbolNode(word));
 		getsym();
 		while (word->getType() == IDENFR) {
-			node->addChild(_標識符());
+			node->addChild(_標識符(&type, &str));
 			if (word->getType() == ASSIGN) {
 				node->addChild(new SymbolNode(word));
 				getsym();
@@ -90,9 +93,20 @@ SymbolNode* Parser::_常量定義() {
 			else error();
 
 			if (word->getType() == INTCON || word->getType() == PLUS || word->getType() == MINU) {
-				node->addChild(_整數());
+				node->addChild(_整數(&num));
 			}
 			else error();
+
+			if (TableItem::scope_i == 0) {
+				MipsGenerator::addData(new std::string("global_const_int_" + *str), str, num);
+			}
+			else {
+				std::stringstream ss;
+				std::string scope_i;
+				ss << TableItem::scope_i;
+				ss >> scope_i;
+				MipsGenerator::addData(new std::string("scope_" + scope_i + "_const_int_" + *str), str, num);
+			}
 
 			if (word->getType() == COMMA) {
 				node->addChild(new SymbolNode(word));
@@ -108,16 +122,28 @@ SymbolNode* Parser::_常量定義() {
 		node->addChild(new SymbolNode(word));
 		getsym();
 		while (word->getType() == IDENFR) {
-			node->addChild(_標識符());
+			node->addChild(_標識符(&type, &str));
 			if (word->getType() == ASSIGN) {
 				node->addChild(new SymbolNode(word));
 				getsym();
 			}
 			else error();
 			if (word->getType() == CHARCON) {
-				node->addChild(_字符());
+				node->addChild(_字符(&num));
 			}
 			else error();
+
+			if (TableItem::scope_i == 0) {
+				MipsGenerator::addData(new std::string("global_const_char_" + *str), str, num);
+			}
+			else {
+				std::stringstream ss;
+				std::string scope_i;
+				ss << TableItem::scope_i;
+				ss >> scope_i;
+				MipsGenerator::addData(new std::string("scope_" + scope_i + "_const_char_" + *str), str, num);
+			}
+
 			if (word->getType() == COMMA) {
 				node->addChild(new SymbolNode(word));
 				getsym();
@@ -222,6 +248,29 @@ SymbolNode* Parser::_字符(std::string** str) {
 	return node;
 }
 
+/* ＜字符＞ ::= '＜加法运算符＞'｜'＜乘法运算符＞'｜'＜字母＞'｜'＜数字＞' */
+SymbolNode* Parser::_字符(int* ascii) {
+	SymbolNode* node = new SymbolNode(字符);
+
+	// ERROR_A JUDGER
+	if (word->getWord().size() == 0) {
+		ErrorHandler::addErrorItem(ERROR_A, word->getLine());
+	} // NO CHAR ERROR
+	else {
+		char c = word->getWord().at(0);
+		if (!(isalpha(c) || isdigit(c) ||
+			c == '+' || c == '-' || c == '*' || c == '/' || c == '_')) {
+			ErrorHandler::addErrorItem(ERROR_A, word->getLine());
+		} // ILLEGAL CHAR ERROR
+	}
+	// ERROR_A JUDGER END
+
+	*ascii = (int)word->getWord().at(0);
+	node->addChild(new SymbolNode(word));	// word->type is CHARCON
+	getsym();
+	return node;
+}
+
 /* ＜变量说明＞ ::= ＜变量定义＞;{＜变量定义＞;} */
 SymbolNode* Parser::_變量說明() {
 	SymbolNode* node = new SymbolNode(變量説明);
@@ -264,10 +313,14 @@ SymbolNode* Parser::_變量定義() {
 	{,(＜标识符＞|＜标识符＞'['＜无符号整数＞']'|＜标识符＞'['＜无符号整数＞']''['＜无符号整数＞']' )}
 */
 SymbolNode* Parser::_變量定義無初始化() {
+	int type;
+	std::string* str;
+	bool isInt = word->getType() == INTTK;
+
 	SymbolNode* node = new SymbolNode(變量定義無初始化);
 	node->addChild(_類型標識符());
 	while (word->getType() == IDENFR) {
-		node->addChild(_標識符());
+		node->addChild(_標識符(&type, &str));
 		if (word->getType() == LBRACK) {
 			node->addChild(new SymbolNode(word));
 			getsym();
@@ -296,6 +349,28 @@ SymbolNode* Parser::_變量定義無初始化() {
 				}
 			}
 		}
+
+		if (TableItem::scope_i == 0) {
+			if (isInt) {
+				MipsGenerator::addData(new std::string("global_var_int_" + *str), str, 0);
+			}
+			else {
+				MipsGenerator::addData(new std::string("global_var_char_" + *str), str, 0);
+			}
+		}
+		else {
+			std::stringstream ss;
+			std::string scope_i;
+			ss << TableItem::scope_i;
+			ss >> scope_i;
+			if (isInt) {
+				MipsGenerator::addData(new std::string("scope_" + scope_i + "_var_int_" + *str), str, 0);
+			}
+			else {
+				MipsGenerator::addData(new std::string("scope_" + scope_i + "_var_char_" + *str), str, 0);
+			}
+		}
+
 		if (word->getType() == COMMA) {
 			node->addChild(new SymbolNode(word));
 			getsym();
@@ -315,9 +390,14 @@ SymbolNode* Parser::_變量定義無初始化() {
 						'{''{'＜常量＞{,＜常量＞}'}'{, '{'＜常量＞{,＜常量＞}'}'}'}'
 */
 SymbolNode* Parser::_變量定義及初始化() {
+	int type, num;
+	std::string* str;
+	bool isInt = word->getType() == INTTK;
+
 	SymbolNode* nodeForErrorO;
 	int numInDim1 = 0, numInDim2 = 0;	// The num of the elements in the array, can have two dimensions.
 	int counter1 = 0, counter2 = 0;		// Counter of the num of the elements.
+
 	SymbolNode* node = new SymbolNode(變量定義及初始化);
 	node->addChild((nodeForErrorO = _類型標識符()));
 
@@ -325,7 +405,7 @@ SymbolNode* Parser::_變量定義及初始化() {
 	TableTools::errorJudgerO(nodeForErrorO, 1);
 	// ERROR_O JUDGER STAGE 1 END
 
-	node->addChild(_標識符());
+	node->addChild(_標識符(&type, &str));
 	if (word->getType() == LBRACK) {
 		node->addChild(new SymbolNode(word));
 		getsym();
@@ -476,11 +556,46 @@ SymbolNode* Parser::_變量定義及初始化() {
 	else { // ＜标识符＞=＜常量＞
 		node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
 		getsym();
-		node->addChild((nodeForErrorO = _常量()));
+		node->addChild((nodeForErrorO = _常量(&num)));
+
 		// ERROR_O JUDGER STAGE 2 
 		TableTools::errorJudgerO(nodeForErrorO, 2);
 		// ERROR_O JUDGER STAGE 2 END
+
+		if (TableItem::scope_i == 0) {
+			if (isInt) {
+				MipsGenerator::addData(new std::string("global_var_int_" + *str), str, num);
+			}
+			else {
+				MipsGenerator::addData(new std::string("global_var_char_" + *str), str, num);
+			}
+		}
+		else {
+			std::stringstream ss;
+			std::string scope_i;
+			ss << TableItem::scope_i;
+			ss >> scope_i;
+			if (isInt) {
+				MipsGenerator::addData(new std::string("scope_" + scope_i + "_var_int_" + *str), str, num);
+			}
+			else {
+				MipsGenerator::addData(new std::string("scope_" + scope_i + "_var_char_" + *str), str, num);
+			}
+		}
 	}
+	return node;
+}
+
+
+SymbolNode* Parser::_標識符(int* type, std::string** str) {
+	SymbolNode* node = new SymbolNode(標識符);
+	*type = IDTYPE;
+	*str = &word->getWord();
+	if (word->getType() == IDENFR) {
+		node->addChild(new SymbolNode(word));
+		getsym();
+	}
+	else error();
 	return node;
 }
 
@@ -513,6 +628,19 @@ SymbolNode* Parser::_常量() {
 	}
 	else if (word->getType() == CHARCON) {
 		node->addChild(_字符());
+	}
+	else error();
+	return node;
+}
+
+// ＜常量＞ ::= ＜整数＞|＜字符＞
+SymbolNode* Parser::_常量(int *num) {
+	SymbolNode* node = new SymbolNode(常量);
+	if (word->getType() == INTCON || word->getType() == PLUS || word->getType() == MINU) {
+		node->addChild(_整數(num));
+	}
+	else if (word->getType() == CHARCON) {
+		node->addChild(_字符(num));
 	}
 	else error();
 	return node;
@@ -890,7 +1018,7 @@ SymbolNode* Parser::_表達式(int* type, int* num, std::string** str) {
 	node->addChild(_項(type, num, str));
 	if (minu) {
 		*str = IrGenerator::addNormalIr(IR_SUB, INTTYPE, *type, 0, *num, nullptr, *str);
-		*type = IDTYPE;
+		*type = TMPTYPE;
 		*num = 0;
 	}
 	while (word->getType() == PLUS || word->getType() == MINU) {
@@ -898,14 +1026,14 @@ SymbolNode* Parser::_表達式(int* type, int* num, std::string** str) {
 			node->addChild(_加法運算符());
 			node->addChild(_項(&_type, &_num, &_str));
 			*str = IrGenerator::addNormalIr(IR_ADD, *type, _type, *num, _num, *str, _str);
-			*type = IDTYPE;
+			*type = TMPTYPE;
 			*num = 0;
 		}
 		if (word->getType() == MINU) {
 			node->addChild(_加法運算符());
 			node->addChild(_項(&_type, &_num, &_str));
 			*str = IrGenerator::addNormalIr(IR_SUB, *type, _type, *num, _num, *str, _str);
-			*type = IDTYPE;
+			*type = TMPTYPE;
 			*num = 0;
 		}
 	}
@@ -953,14 +1081,14 @@ SymbolNode* Parser::_項(int* type, int* num, std::string** str) {
 			node->addChild(_乘法運算符());
 			node->addChild(_因子(&_type, &_num, &_str));
 			*str = IrGenerator::addNormalIr(IR_MUL, *type, _type, *num, _num, *str, _str);
-			*type = IDTYPE;
+			*type = TMPTYPE;
 			*num = 0;
 		}
 		else if (word->getType() == DIV) {
 			node->addChild(_乘法運算符());
 			node->addChild(_因子(&_type, &_num, &_str));
 			*str = IrGenerator::addNormalIr(IR_DIV, *type, _type, *num, _num, *str, _str);
-			*type = IDTYPE;
+			*type = TMPTYPE;
 			*num = 0;
 		}
 	}
@@ -1071,9 +1199,7 @@ SymbolNode* Parser::_因子(int* type, int* num, std::string** str) {
 		TableTools::errorJudgerC(word);
 		// ERROR_C JUDGER END
 
-		*type = IDTYPE;
-		*str = &word->getWord();
-		node->addChild(_標識符());
+		node->addChild(_標識符(type, str));
 		int line; SymbolNode* nodeForErrorI;
 		if (word->getType() == LBRACK) {
 			node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
@@ -1246,13 +1372,16 @@ SymbolNode* Parser::_寫語句() {
 	if (word->getType() == STRCON) {
 		std::string* str = nullptr;
 		node->addChild(_字符串(&str));
-		IrGenerator::addPrintStrIr(str);
 		if (word->getType() == COMMA) {
+			IrGenerator::addPrintStrIr(str);
 			node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 			getsym();
 			node->addChild(_表達式(&type, &num, &str));
 			IrGenerator::addPrintExpIr(type, num, str);
 		}
+		else {
+			IrGenerator::addPrintStrIr(new std::string(*str + "\\n"));
+		} // If no expression after string, add \n.
 	}
 	else {
 		node->addChild(_表達式(&type, &num, &str));

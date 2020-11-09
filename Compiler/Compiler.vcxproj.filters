@@ -51,7 +51,16 @@
     <ClInclude Include="ir.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="instructionDefinitions.h">
+    <ClInclude Include="irDefinitions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mipsDefinitions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mips.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regfileManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -95,7 +104,16 @@
     <ClCompile Include="ir.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="instructionDefinitions.cpp">
+    <ClCompile Include="irDefinitions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mipsDefinitions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mips.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regfileManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

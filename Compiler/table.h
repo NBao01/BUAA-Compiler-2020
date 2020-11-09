@@ -38,6 +38,7 @@ public:
 	bool isSameName(std::string* name);
 	int getType();
 	int getRetType();
+	int getScope();
 	int getParamNum();
 	std::vector<int>* getParamsRetType();
 };
@@ -65,6 +66,7 @@ public:
 	static bool errorJudgerGH(int stage, int key, int line = 0);
 	static bool errorJudgerJ(Word* word);
 	static bool errorJudgerO(SymbolNode* node, int stage);
+	static void search(std::string* str, int* type, std::string** label);
 };
 
 #endif // !__TABLE_H__

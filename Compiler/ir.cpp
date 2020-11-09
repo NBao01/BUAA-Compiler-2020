@@ -61,7 +61,7 @@ std::string* IrItem::getRes() {
 
 std::string* IrGenerator::labelGen() {
 	static int i = 0;
-	std::string prefix = "temp_";
+	std::string prefix = "$temp_";
 	std::string suffix;
 	std::stringstream ss;
 	ss << i++;
@@ -78,8 +78,14 @@ void IrGenerator::output() {
 			if ((*it)->getLopType() == STRTYPE) {
 				out << irInstructions[op] << " " << "\"" << *(*it)->getLop() << "\"" << std::endl;
 			}
-			else if ((*it)->getLopType() == IDTYPE) {
+			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
 				out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;
+			}
+			else if ((*it)->getLopType() == INTTYPE) {
+				out << irInstructions[op] << " " << (*it)->getLopInt() << std::endl;
+			}
+			else if ((*it)->getLopType() == CHTYPE) {
+				out << irInstructions[op] << " '" << *(*it)->getLop() << "'" << std::endl;
 			}
 		}
 		else if (op == IR_SCAN) {
@@ -93,7 +99,7 @@ void IrGenerator::output() {
 			else if ((*it)->getLopType() == CHTYPE) {
 				out << "'" << *(*it)->getLop() << "'";
 			}
-			else {
+			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
 				out << *(*it)->getLop();
 			}
 			out << " " << *(*it)->getRes() << std::endl;
@@ -106,7 +112,7 @@ void IrGenerator::output() {
 			else if ((*it)->getLopType() == CHTYPE) {
 				out << "'" << *(*it)->getLop() << "'";
 			}
-			else {
+			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
 				out << *(*it)->getLop();
 			}
 			out << " ";
@@ -116,7 +122,7 @@ void IrGenerator::output() {
 			else if ((*it)->getRopType() == CHTYPE) {
 				out << "'" << *(*it)->getRop() << "'";
 			}
-			else {
+			else if ((*it)->getRopType() == IDTYPE || (*it)->getRopType() == TMPTYPE) {
 				out << *(*it)->getRop();
 			}
 			out << " " << *(*it)->getRes() << std::endl;

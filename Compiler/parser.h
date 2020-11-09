@@ -17,13 +17,16 @@ public:
 	static SymbolNode* _無符號整數(int* num);
 	static SymbolNode* _字符();
 	static SymbolNode* _字符(std::string** str);
+	static SymbolNode* _字符(int* ascii);
 	static SymbolNode* _變量說明();
 	static SymbolNode* _變量定義();
 	static SymbolNode* _變量定義無初始化();
 	static SymbolNode* _變量定義及初始化();
+	static SymbolNode* _標識符(int* type, std::string** str);
 	static SymbolNode* _標識符();
 	static SymbolNode* _類型標識符();
 	static SymbolNode* _常量();
+	static SymbolNode* _常量(int* num);
 	static SymbolNode* _有返回值函數定義();
 	static SymbolNode* _無返回值函數定義();
 	static SymbolNode* _聲明頭部();

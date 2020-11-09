@@ -3,14 +3,15 @@
 
 #include <string>
 #include <vector>
-#include "instructionDefinitions.h"
+#include "irDefinitions.h"
 
 // lop type and rop type
-#define NOTYPE	0
-#define IDTYPE	1
-#define INTTYPE	2
-#define CHTYPE	3
-#define STRTYPE	4
+#define NOTYPE		0
+#define IDTYPE		1
+#define INTTYPE		2
+#define CHTYPE		3
+#define STRTYPE		4
+#define TMPTYPE		5
 
 class IrItem {
 private:
@@ -50,7 +51,6 @@ public:
 	static std::string* addNormalIr( // add calculation IR, return result identifier(temp or permanent)
 		int op, int lopType, int ropType, int lopInt, int ropInt,
 		std::string* lop, std::string* rop, std::string* res = nullptr);
-	
 };
 
 #endif // !__IR_H__

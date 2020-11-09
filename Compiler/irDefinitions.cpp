@@ -1,4 +1,4 @@
-#include "instructionDefinitions.h"
+#include "irDefinitions.h"
 
 const std::string irInstructions[] = {
 	" ",

@@ -144,11 +144,14 @@
   <ItemGroup>
     <ClInclude Include="abstractSyntaxTree.h" />
     <ClInclude Include="error.h" />
-    <ClInclude Include="instructionDefinitions.h" />
+    <ClInclude Include="irDefinitions.h" />
     <ClInclude Include="ir.h" />
     <ClInclude Include="keywordJudger.h" />
     <ClInclude Include="lexicalAnalyzer.h" />
+    <ClInclude Include="mips.h" />
+    <ClInclude Include="mipsDefinitions.h" />
     <ClInclude Include="parser.h" />
+    <ClInclude Include="regfileManager.h" />
     <ClInclude Include="stateMachine.h" />
     <ClInclude Include="symbols.h" />
     <ClInclude Include="syntaxAnalyzer.h" />
@@ -159,12 +162,15 @@
   <ItemGroup>
     <ClCompile Include="abstractSyntaxTree.cpp" />
     <ClCompile Include="error.cpp" />
-    <ClCompile Include="instructionDefinitions.cpp" />
+    <ClCompile Include="irDefinitions.cpp" />
     <ClCompile Include="ir.cpp" />
     <ClCompile Include="keywordJudger.cpp" />
     <ClCompile Include="lexicalAnalyzer.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="mips.cpp" />
+    <ClCompile Include="mipsDefinitions.cpp" />
     <ClCompile Include="parser.cpp" />
+    <ClCompile Include="regfileManager.cpp" />
     <ClCompile Include="stateMachine.cpp" />
     <ClCompile Include="symbols.cpp" />
     <ClCompile Include="syntaxAnalyzer.cpp" />
