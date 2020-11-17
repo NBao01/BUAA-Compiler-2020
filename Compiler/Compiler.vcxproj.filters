@@ -13,108 +13,138 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\LexicalAnalyzer">
+      <UniqueIdentifier>{91b6b6c4-8acc-4aa9-9664-d4bd1718ce47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\LexicalAnalyzer">
+      <UniqueIdentifier>{6f10553d-0e49-4f9b-aa2d-6a8187628247}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SyntaxAnalyzer">
+      <UniqueIdentifier>{ee18f557-35b9-411c-aa07-d18af841eeae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\SyntaxAnalyzer">
+      <UniqueIdentifier>{e3694c5e-b6c3-4260-82ab-8da72a3124be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\IrGenerator">
+      <UniqueIdentifier>{0d4d7251-1169-41c9-93e7-f9fbe143c55b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\IrGenerator">
+      <UniqueIdentifier>{6a126a4a-f943-4012-8397-b42f32ab362d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ErrorHandler">
+      <UniqueIdentifier>{013aa28a-a349-452d-bbe4-fecc342ec264}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ErrorHandler">
+      <UniqueIdentifier>{8c715637-3cdc-4815-8788-6131f9d0f4ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MipsGenerator">
+      <UniqueIdentifier>{d3003dfe-7590-46db-8bc6-7a4baf571a51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MipsGenerator">
+      <UniqueIdentifier>{ba13b41c-cca3-46fb-97e9-deebd80b34ee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="tokens.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="stateMachine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="error.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="keywordJudger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lexicalAnalyzer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wordlist.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="parser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="symbols.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="syntaxAnalyzer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="abstractSyntaxTree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="table.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lexicalAnalyzer.h">
+      <Filter>Header Files\LexicalAnalyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="keywordJudger.h">
+      <Filter>Header Files\LexicalAnalyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="stateMachine.h">
+      <Filter>Header Files\LexicalAnalyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="tokens.h">
+      <Filter>Header Files\LexicalAnalyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="wordlist.h">
+      <Filter>Header Files\LexicalAnalyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="abstractSyntaxTree.h">
+      <Filter>Header Files\SyntaxAnalyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="symbols.h">
+      <Filter>Header Files\SyntaxAnalyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="syntaxAnalyzer.h">
+      <Filter>Header Files\SyntaxAnalyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="parser.h">
+      <Filter>Header Files\SyntaxAnalyzer</Filter>
+    </ClInclude>
     <ClInclude Include="ir.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\IrGenerator</Filter>
     </ClInclude>
     <ClInclude Include="irDefinitions.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\IrGenerator</Filter>
     </ClInclude>
-    <ClInclude Include="mipsDefinitions.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="error.h">
+      <Filter>Header Files\ErrorHandler</Filter>
     </ClInclude>
     <ClInclude Include="mips.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\MipsGenerator</Filter>
+    </ClInclude>
+    <ClInclude Include="mipsDefinitions.h">
+      <Filter>Header Files\MipsGenerator</Filter>
     </ClInclude>
     <ClInclude Include="regfileManager.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\MipsGenerator</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="tokens.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stateMachine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="keywordJudger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lexicalAnalyzer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="wordlist.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="error.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="parser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="symbols.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="syntaxAnalyzer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="abstractSyntaxTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="table.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lexicalAnalyzer.cpp">
+      <Filter>Source Files\LexicalAnalyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="keywordJudger.cpp">
+      <Filter>Source Files\LexicalAnalyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="stateMachine.cpp">
+      <Filter>Source Files\LexicalAnalyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="tokens.cpp">
+      <Filter>Source Files\LexicalAnalyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="wordlist.cpp">
+      <Filter>Source Files\LexicalAnalyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="abstractSyntaxTree.cpp">
+      <Filter>Source Files\SyntaxAnalyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="parser.cpp">
+      <Filter>Source Files\SyntaxAnalyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="symbols.cpp">
+      <Filter>Source Files\SyntaxAnalyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="syntaxAnalyzer.cpp">
+      <Filter>Source Files\SyntaxAnalyzer</Filter>
+    </ClCompile>
     <ClCompile Include="ir.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\IrGenerator</Filter>
     </ClCompile>
     <ClCompile Include="irDefinitions.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\IrGenerator</Filter>
+    </ClCompile>
+    <ClCompile Include="error.cpp">
+      <Filter>Source Files\ErrorHandler</Filter>
     </ClCompile>
     <ClCompile Include="mipsDefinitions.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\MipsGenerator</Filter>
     </ClCompile>
     <ClCompile Include="mips.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\MipsGenerator</Filter>
     </ClCompile>
     <ClCompile Include="regfileManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\MipsGenerator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
