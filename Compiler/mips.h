@@ -12,9 +12,8 @@ private:
 	int dataType;
 	int data;
 	std::string* strData;
-	int cache;
 public:
-	DataItem(std::string* label, std::string* prototype, int dataType, int data, std::string* strData, int cache);
+	DataItem(std::string* label, std::string* prototype, int dataType, int data, std::string* strData);
 	std::string* getLabel();
 	std::string* getPrototype();
 	int getDataType();

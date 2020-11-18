@@ -9,13 +9,12 @@
 std::vector<DataItem*> dataSegment;
 std::vector<TextItem*> textSegment;
 
-DataItem::DataItem(std::string* label, std::string* prototype, int dataType, int data, std::string* strData, int cache) {
+DataItem::DataItem(std::string* label, std::string* prototype, int dataType, int data, std::string* strData) {
 	this->label = label;
 	this->prototype = prototype;
 	this->dataType = dataType;
 	this->data = data;
 	this->strData = strData;
-	this->cache = cache;
 }
 
 std::string* DataItem::getLabel() {
@@ -93,11 +92,11 @@ std::string* MipsGenerator::strConLabelGen() {
 }
 
 void MipsGenerator::addData(std::string* label, std::string* strData) {
-	dataSegment.push_back(new DataItem(tolower(label), nullptr,  _ASCIIZ, 0, strData, 0));
+	dataSegment.push_back(new DataItem(tolower(label), nullptr,  _ASCIIZ, 0, strData));
 }
 
 void MipsGenerator::addData(std::string* label, std::string* prototype, int data) {
-	dataSegment.push_back(new DataItem(tolower(label), tolower(prototype), _WORD, data, nullptr, 0));
+	dataSegment.push_back(new DataItem(tolower(label), tolower(prototype), _WORD, data, nullptr));
 }
 
 void MipsGenerator::addR(int instr, int rs, int rt, int rd) {

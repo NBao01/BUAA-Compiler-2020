@@ -50,6 +50,7 @@ SymbolNode* Parser::_程序() {
 		}
 	}
 	node->addChild(_主函數());
+	TableTools::setStackSpaceOfScope(TableItem::offset_i);	// set stack space for main scope.
 	return node;
 }
 

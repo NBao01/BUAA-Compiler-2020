@@ -9,55 +9,143 @@
 std::vector<TableItem*> table;
 
 int TableItem::scope_i = 0;
+int TableItem::offset_i = 0;
 
 int TableTools::it_prev= 0;
 std::string* TableTools::name = nullptr;
 int TableTools::type = -1;
 int TableTools::retType = -1;
-int TableTools::dimension = -1;
+std::vector<int> TableTools::stackSpace;
 
 TableItem::TableItem(std::string* name, int type, int retType, int scope) {
 	this->name = name;
 	this->type = type;
 	this->retType = retType;
 	this->scope = scope;
+	// These below will be set by setter
 	dimension = 0;
+	dims[0] = 0;
+	dims[1] = 0;
 	paramNum = 0;
 	paramsRetType = nullptr;
+	this->label = nullptr;
+	this->offset = 0;
+	this->initialValue = 0;
+	this->initialValues = nullptr;
+	this->cache = 0;
 }
 
-TableItem* TableItem::newConstTableItem(std::string* name, int type, int retType) {
+TableItem* TableItem::newConstTableItem(std::string* name, int type, int retType, int initialValue) {
 	assert(type == CONST && retType != VOID);
-	return new TableItem(name, type, retType, scope_i);
+	TableItem* ti = new TableItem(name, type, retType, scope_i);
+
+	// Make Label for Global Const
+	if (scope_i == 0) {
+		std::string* label = new std::string();
+		if (retType == INT) {
+			*label += "global_const_int_";
+		}
+		else if (retType == CHAR) {
+			*label += "global_const_char_";
+		}
+		*label += *name;
+		ti->setLabel(label);
+	}
+	else {
+		ti->setOffset(offset_i);
+		offset_i += 4;
+	}
+
+	ti->setInitialValue(initialValue);
+
+	return ti;
 }
 
-TableItem* TableItem::newVarTableItem(std::string* name, int type, int retType, int dimension) {
+TableItem* TableItem::newVarTableItem(std::string* name, int type, int retType, 
+	int dimension, int dim0, int dim1, int initialValue, std::vector<int>* initialValues) {
 	assert(type == VAR && retType != VOID);
 	TableItem* ti = new TableItem(name, type, retType, scope_i);
-	ti->setDimension(dimension);
+
+	ti->setDimension(dimension, dim0, dim1);
+
+	// Make Label for Global Var
+	if (scope_i == 0) {
+		std::string* label = new std::string();
+		if (retType == INT) {
+			*label += "global_var_int_";
+		}
+		else if (retType == CHAR) {
+			*label += "global_var_char_";
+		}
+		*label += *name;
+		ti->setLabel(label);
+	}
+	else {
+		ti->setOffset(offset_i);
+		if (dimension == 0) {
+			offset_i += 4;
+		}
+		else if(dimension == 1) {
+			offset_i += 4 * dim0;
+		}
+		else if (dimension == 2) {
+			offset_i += 4 * dim0 * dim1;
+		}
+	}
+
+	ti->setInitialValue (initialValue );
+	ti->setInitialValues(initialValues);
+
 	return ti;
 }
 
 TableItem* TableItem::newFuncTableItem(std::string* name, int type, int retType) {
 	assert(type == FUNC);
-	TableItem* ti = new TableItem(name, type, retType, 0);
+	TableItem* ti = new TableItem(name, type, retType, 0); // The Function Definition has scope 0
 	//ti->setParams(paramNum, params);
+	TableTools::setStackSpaceOfScope(offset_i);	// set stack space for each scope.
 	scope_i++;
+	offset_i = 0;
 	return ti;
 }
 
 TableItem* TableItem::newParamTableItem(std::string* name, int type, int retType) {
 	assert(type == PARAM);
-	return new TableItem(name, type, retType, scope_i);
+	TableItem * ti = new TableItem(name, type, retType, scope_i);
+	ti->setOffset(offset_i);
+	offset_i += 4;	// offset of params by stack pointer
+	return ti;
 }
 
-void TableItem::setDimension(int dimension) {
+void TableItem::setDimension(int dimension, int dim0, int dim1) {
 	this->dimension = dimension;
+	this->dims[0] = dim0;
+	this->dims[1] = dim1;
 }
 
 void TableItem::setParams(int paramNum, std::vector<int>* paramsRetType) {
 	this->paramNum = paramNum;
 	this->paramsRetType = paramsRetType;
+}
+
+void TableItem::setLabel(std::string* label) {
+	this->label = label;
+}
+
+void TableItem::setOffset(int offset) {
+	this->offset = offset;
+}
+
+void TableItem::setInitialValue(int initialValue) {
+	this->initialValue = initialValue;
+}
+
+void TableItem::setInitialValues(std::vector<int>* initialValues) {
+	this->initialValues = initialValues;
+}
+
+void TableItem::setCache(int reg) {
+	this->cache = reg;
 }
 
 bool TableItem::isSameScope(int curScope) {
@@ -95,9 +183,62 @@ std::vector<int>* TableItem::getParamsRetType() {
 	return paramsRetType;
 }
 
+std::string* TableItem::getLabel() {
+	return label;
+}
+
+int TableItem::getOffset() {
+	return offset;
+}
+
+int TableItem::getInitialValue() {
+	return initialValue;
+}
+
+std::vector<int>* TableItem::getInitialValues() {
+	return initialValues;
+}
+
+int TableItem::getCache() {
+	return cache;
+}
+
+void TableTools::setStackSpaceOfScope(int space) {
+	stackSpace.push_back(space);
+}
+
+int TableTools::getstackSpaceOfScope(int scope) {
+	return stackSpace.at(scope);
+}
+
+// parse initial value for consts and vars. return ascii if charcon, return intVal if intcon, plus, minus.
+int TableTools::parseInitialValue(int& i) {
+	assert(wordlist[i]->getType() == INTCON || wordlist[i]->getType() == CHARCON || 
+		wordlist[i]->getType() == PLUS || wordlist[i]->getType() == MINU);
+
+	int value = 0;
+
+	if (wordlist[i]->getType() == INTCON) {
+		std::stringstream ss; ss << wordlist[i]->getWord(); ss >> value;
+	}
+	else if (wordlist[i]->getType() == CHARCON) {
+		value = (int)wordlist[i]->getWord().at(0);	// ASCII
+	}
+	else if (wordlist[i]->getType() == PLUS) {
+		std::stringstream ss; ss << wordlist[++i]->getWord(); ss >> value;
+	}
+	else if (wordlist[i]->getType() == MINU) {
+		std::stringstream ss; ss << wordlist[++i]->getWord(); ss >> value;
+		value = -value;
+	}
+	// Don't need a 'i++' because it will ++ in for loop of addConsts and addVars.
+	return value;
+}
+
 // Add consts to the table, add error_b to errorlist if there is any redefined consts
 void TableTools::addConsts(int it) {
 	type = CONST;
+	int initialValue = 0;
 	for (int i = it_prev; i < it; i++) {
 		// std::cout << tokens[wordlist[i]->getType()] << " " << wordlist[i]->getWord() << std::endl;
 		if (wordlist[i]->getType() == INTTK) {
@@ -119,7 +260,11 @@ void TableTools::addConsts(int it) {
 			}
 			// ERROR_B JUDGER END
 
-			table.push_back(TableItem::newConstTableItem(name, type, retType));
+			// Get the Initial Value of the const
+			assert(wordlist[++i]->getType() == ASSIGN);
+			initialValue = parseInitialValue(++i);
+
+			table.push_back(TableItem::newConstTableItem(name, type, retType, initialValue));
 		}
 	}
 	it_prev = it;
@@ -128,7 +273,10 @@ void TableTools::addConsts(int it) {
 // Add variables to the table, add error_b to errorlist if there is any redefined variables
 void TableTools::addVars(int it) {
 	type = VAR;
-	dimension = 0;
+	int dimension = 0;
+	int dim0 = 0, dim1 = 0;
+	int initialValue = 0;
+	std::vector<int>* initialValues = nullptr;
 	for (int i = it_prev; i < it; i++) {
 		// std::cout << tokens[wordlist[i]->getType()] << " " << wordlist[i]->getWord() << std::endl;
 		if (wordlist[i]->getType() == INTTK) {
@@ -151,27 +299,58 @@ void TableTools::addVars(int it) {
 			// ERROR_B JUDGER END
 		}
 
-		if (wordlist[i]->getType() == RBRACK) {
+		// Get the Dimension of the variable
+		if (wordlist[i]->getType() == LBRACK) {
 			dimension++;
+			assert(wordlist[++i]->getType() == INTCON);
+			std::stringstream ss; ss << wordlist[i]->getWord(); ss >> dim0;
+			assert(wordlist[++i]->getType() == RBRACK);
+
+			if (wordlist[++i]->getType() == LBRACK) {
+				dimension++;
+				assert(wordlist[++i]->getType() == INTCON);
+				std::stringstream ss; ss << wordlist[i]->getWord(); ss >> dim1;
+				assert(wordlist[++i]->getType() == RBRACK);
+			}
 		}
 
-		if (wordlist[i]->getType() == LBRACE) {
+		if (wordlist[i]->getType() == ASSIGN) {
 			i++;
-			while (wordlist[i]->getType() != RBRACE) {
-				if (wordlist[i]->getType() == LBRACE) {
-					while (wordlist[i]->getType() != RBRACE) {
-						i++;
-					}
-				}
+			if (wordlist[i]->getType() == LBRACE) {
+				// Array Variable
+				initialValues = new std::vector<int>();
 				i++;
+				while (wordlist[i]->getType() != RBRACE) {
+					if (wordlist[i]->getType() == LBRACE) {
+						while (wordlist[i]->getType() != RBRACE) {
+							if (wordlist[i]->getType() == INTCON || wordlist[i]->getType() == CHARCON ||
+								wordlist[i]->getType() == PLUS || wordlist[i]->getType() == MINU) {
+								initialValues->push_back(parseInitialValue(i)); // Two Dimension Array
+							}
+							i++;
+						}
+					}
+					else if (wordlist[i]->getType() == INTCON || wordlist[i]->getType() == CHARCON ||
+						wordlist[i]->getType() == PLUS || wordlist[i]->getType() == MINU) {
+						initialValues->push_back(parseInitialValue(i)); // One Dimension Array
+					}
+					i++;
+				}
+			}
+			else {
+				// Simple Variable
+				initialValue = parseInitialValue(i);
 			}
 		}
 
 		if (wordlist[i]->getType() == COMMA || wordlist[i]->getType() == SEMICN) {
-			table.push_back(TableItem::newVarTableItem(name, type, retType, dimension));
-			dimension = 0;
+			table.push_back(TableItem::newVarTableItem(name, type, retType, dimension, dim0, dim1, initialValue, initialValues));
+			dimension = 0; dim0 = 0; dim1 = 0;
+			initialValue = 0;
+			initialValues = nullptr;
 		}
 	}
+	assert(initialValues == nullptr);
 	it_prev = it;
 }
 
@@ -199,7 +378,7 @@ void TableTools::addFunc(int it) {
 			}
 		} // Determine the return type of the function
 		else if (!funcIdentifierIsDetected) {
-			if (wordlist[i]->getType() == IDENFR || MAINTK) {
+			if (wordlist[i]->getType() == IDENFR || wordlist[i]->getType() == MAINTK) {
 				name = &wordlist[i]->getWord();
 
 				// ERROR_B JUDGER
@@ -464,6 +643,15 @@ bool TableTools::errorJudgerO(SymbolNode* node, int stage) {
 		}
 	}
 	return false;
+}
+
+TableItem* TableTools::search(std::string* name) {
+	for (int i = table.size() - 1; i >= 0; i--) {
+		if ((table[i]->isSameScope(TableItem::scope_i) || table[i]->isSameScope(0)) &&
+			table[i]->isSameName(name)) {
+			return table[i];
+		}
+	}
 }
 
 void TableTools::search(std::string* str, int* type, std::string** label) {

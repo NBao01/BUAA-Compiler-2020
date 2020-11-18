@@ -18,10 +18,10 @@ int main() {
 
 	(step == 3) ? ErrorHandler::output() : doNothing();
 
-	(step == 4) ? IrGenerator::output() : doNothing();
+	//(step == 4) ? IrGenerator::output() : doNothing();
 
-	MipsGenerator::generate();
-	(step == 5) ? MipsGenerator::output() : doNothing();
+	//MipsGenerator::generate();
+	//(step == 5) ? MipsGenerator::output() : doNothing();
 
 	return 0;
 }
