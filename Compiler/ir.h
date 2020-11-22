@@ -6,12 +6,12 @@
 #include "irDefinitions.h"
 
 // lop type and rop type
-#define NOTYPE		0
-#define IDTYPE		1
-#define INTTYPE		2
-#define CHTYPE		3
-#define STRTYPE		4
-#define TMPTYPE		5
+#define NOTYPE		0	// no type, lop/rop is nullptr
+#define IDTYPE		1	// identifier type, lop/rop is the identifier
+#define INTTYPE		2	// int type, lopInt/ropInt is the integer
+#define CHTYPE		3	// char type, lop/rop is the char
+#define STRTYPE		4	// string type, lop/rop is the string
+#define TMPTYPE		5	// temp type, lop/rop is the temp identifier
 
 class IrItem {
 private:
@@ -51,6 +51,10 @@ public:
 	static std::string* addNormalIr( // add calculation IR, return result identifier(temp or permanent)
 		int op, int lopType, int ropType, int lopInt, int ropInt,
 		std::string* lop, std::string* rop, std::string* res = nullptr);
+	static void addFuncDefIr(int type, std::string* lop);
+	static void addReturnIr(int type, int num, std::string* lop);
+	static void addCallIr(int type, std::string* lop);
+	static void addPushIr(int type, int num, std::string* lop);
 };
 
 #endif // !__IR_H__

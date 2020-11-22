@@ -453,7 +453,7 @@ bool TableTools::isVoidFunc(std::string* word) {
 	for (int i = table.size() - 1; i >= 0; i--) {
 		if (table[i]->getType() == FUNC &&
 			table[i]->getRetType() == VOID &&
-			table[i]->isSameName(name)) {
+			table[i]->isSameName(word)) {
 			return true;
 		}
 	}

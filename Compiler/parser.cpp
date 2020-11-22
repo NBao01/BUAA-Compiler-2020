@@ -594,7 +594,10 @@ SymbolNode* Parser::_有返回值函數定義() {
 	// ERROR_GH JUDGER STAGE 1 END
 
 	SymbolNode* node = new SymbolNode(有返回值函數定義);
-	node->addChild(_聲明頭部());
+	int type = 0;	std::string* str = nullptr;
+
+	node->addChild(_聲明頭部(&type, &str));
+	IrGenerator::addFuncDefIr(type, str);
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild(_參數表());
@@ -629,9 +632,12 @@ SymbolNode* Parser::_無返回值函數定義() {
 	// ERROR_GH JUDGER STAGE 1 END
 
 	SymbolNode* node = new SymbolNode(無返回值函數定義);
+	int type = 0;	std::string* str = nullptr;
+
 	node->addChild(new SymbolNode(word));	// word->getType() is VOIDTK
 	getsym();
-	node->addChild(_標識符());
+	node->addChild(_標識符(&type, &str));
+	IrGenerator::addFuncDefIr(type, str);
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild(_參數表());
@@ -650,6 +656,15 @@ SymbolNode* Parser::_無返回值函數定義() {
 	node->addChild(_複合語句());
 	node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
 	getsym();
+	return node;
+}
+
+// ＜声明头部＞ ::=  int＜标识符＞ |char＜标识符＞
+SymbolNode* Parser::_聲明頭部(int* type, std::string** str) {
+	SymbolNode* node = new SymbolNode(聲明頭部);
+	node->addChild(new SymbolNode(word));	// word->getType() is INTTK or CHARTK
+	getsym();
+	node->addChild(_標識符(type, str));
 	return node;
 }
 
@@ -1200,7 +1215,9 @@ SymbolNode* Parser::_因子(int* type, int* num, std::string** str) {
 		node->addChild(_字符(str));
 	}
 	else if (word->getType() == IDENFR) {
+		*type = TMPTYPE;
 		node->addChild(_有返回值函數調用語句());
+		*str = new std::string("$RET");
 	}
 	return node;
 }
@@ -1221,12 +1238,13 @@ SymbolNode* Parser::_有返回值函數調用語句() {
 	Word* wordForErrorDE = word;
 	SymbolNode* nodeForErrorDE;
 	SymbolNode* node = new SymbolNode(有返回值函數調用語句);
+	int type = 0;	std::string* str = nullptr;
 
 	// ERROR_C JUDGER
 	bool errorC = TableTools::errorJudgerC(word);
 	// ERROR_C JUDGER END
 
-	node->addChild(_標識符());
+	node->addChild(_標識符(&type, &str));
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild((nodeForErrorDE = _值參數表()));		//node->addChild(_值參數表());
@@ -1248,18 +1266,22 @@ SymbolNode* Parser::_有返回值函數調用語句() {
 	errorD ? true : TableTools::errorJudgerE(wordForErrorDE, nodeForErrorDE);
 	// ERROR_E JUDGER
 
+	IrGenerator::addCallIr(type, str);
 	return node;
 }
 
 // ＜值参数表＞ ::= ＜表达式＞{,＜表达式＞}｜＜空＞
 SymbolNode* Parser::_值參數表() {
 	SymbolNode* node = new SymbolNode(值參數表);
+	int type = 0, num = 0;	std::string* str = nullptr;
 	if (word->getType() != RPARENT && word->getType() != SEMICN) {
-		node->addChild(_表達式());
+		node->addChild(_表達式(&type, &num, &str));
+		IrGenerator::addPushIr(type, num, str);
 		while (word->getType() == COMMA) {
 			node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 			getsym();
-			node->addChild(_表達式());
+			node->addChild(_表達式(&type, &num, &str));
+			IrGenerator::addPushIr(type, num, str);
 		}
 	}
 	return node;
@@ -1363,6 +1385,7 @@ SymbolNode* Parser::_字符串(std::string** str) {
 // ＜返回语句＞ ::= return['('＜表达式＞')']   
 SymbolNode* Parser::_返回語句() {
 	SymbolNode* node = new SymbolNode(返回語句);
+	int type = 0, num = 0;	std::string* str = nullptr;
 	if (word->getType() == RETURNTK) {
 		node->addChild(new SymbolNode(word));
 		getsym();
@@ -1377,7 +1400,8 @@ SymbolNode* Parser::_返回語句() {
 				// ERROR_GH JUDGER STAGE 2 END
 			}
 			else {
-				node->addChild((nodeForErrorGH = _表達式()));
+				node->addChild((nodeForErrorGH = _表達式(&type, &num, &str)));
+				IrGenerator::addReturnIr(type, num, str);
 			}
 
 			if (word->getType() == RPARENT) {
@@ -1557,7 +1581,9 @@ SymbolNode* Parser::_無返回值函數調用語句() {
 	Word* wordForErrorDE = word;
 	SymbolNode* nodeForErrorDE;
 	SymbolNode* node = new SymbolNode(無返回值函數調用語句);
-	node->addChild(_標識符());
+	int type = 0;	std::string* str = nullptr;
+
+	node->addChild(_標識符(&type, &str));
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild((nodeForErrorDE = _值參數表()));		//node->addChild(_值參數表());
@@ -1579,6 +1605,7 @@ SymbolNode* Parser::_無返回值函數調用語句() {
 	errorD ? true : TableTools::errorJudgerE(wordForErrorDE, nodeForErrorDE);
 	// ERROR_E JUDGER
 
+	IrGenerator::addCallIr(type, str);
 	return node;
 }
 
@@ -1592,6 +1619,7 @@ SymbolNode* Parser::_主函數() {
 	SymbolNode* node = new SymbolNode(主函數);
 	node->addChild(new SymbolNode(word));	// word->getType() is VOIDTK
 	getsym();
+	IrGenerator::addFuncDefIr(IDTYPE, &word->getWord());	// add main func to ir
 	node->addChild(new SymbolNode(word));	// word->getType() is MAINTK
 	getsym();
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT

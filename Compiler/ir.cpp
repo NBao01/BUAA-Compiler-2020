@@ -1,6 +1,7 @@
 #include "ir.h"
 #include <sstream>
 #include <fstream>
+#include <cassert>
 
 std::vector<IrItem*> IrList;
 
@@ -127,6 +128,35 @@ void IrGenerator::output() {
 			}
 			out << " " << *(*it)->getRes() << std::endl;
 		}
+		else if (op == IR_FUNCDEF) {
+			out << std::endl;
+			out << *(*it)->getLop() << "()" << std::endl;
+		}
+		else if (op == IR_RET) {
+			if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
+				out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;
+			}
+			else if ((*it)->getLopType() == CHTYPE) {
+				out << irInstructions[op] << " " << "'" << *(*it)->getLop() << "'" << std::endl;
+			}
+			else if ((*it)->getLopType() == INTTYPE) {
+				out << irInstructions[op] << " " << (*it)->getLopInt() << std::endl;
+			}
+		}
+		else if (op == IR_CALL) {
+			out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;
+		}
+		else if (op == IR_PUSH) {
+			if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
+				out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;
+			}
+			else if ((*it)->getLopType() == CHTYPE) {
+				out << irInstructions[op] << " " << "'" << *(*it)->getLop() << "'" << std::endl;
+			}
+			else if ((*it)->getLopType() == INTTYPE) {
+				out << irInstructions[op] << " " << (*it)->getLopInt() << std::endl;
+			}
+		}
 	}
 	out.close();
 }
@@ -152,4 +182,22 @@ std::string* IrGenerator::addNormalIr(int op, int lopType, int ropType, int lopI
 	std::string* ret = res ? res : labelGen();
 	IrList.push_back(new IrItem(op, lopType, ropType, lopInt, ropInt, lop, rop, ret));
 	return ret;
+}
+
+void IrGenerator::addFuncDefIr(int type, std::string* lop) {
+	assert(type == IDTYPE);
+	IrList.push_back(new IrItem(IR_FUNCDEF, type, NOTYPE, 0, 0, lop, nullptr, nullptr));
+}
+
+void IrGenerator::addReturnIr(int type, int num, std::string* lop) {
+	IrList.push_back(new IrItem(IR_RET, type, NOTYPE, num, 0, lop, nullptr, nullptr));
+}
+
+void IrGenerator::addCallIr(int type, std::string* lop) {
+	assert(type == IDTYPE);
+	IrList.push_back(new IrItem(IR_CALL, type, NOTYPE, 0, 0, lop, nullptr, nullptr));
+}
+
+void IrGenerator::addPushIr(int type, int num, std::string* lop) {
+	IrList.push_back(new IrItem(IR_PUSH, type, NOTYPE, num, 0, lop, nullptr, nullptr));
 }

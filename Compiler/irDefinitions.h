@@ -10,6 +10,20 @@
 #define IR_PRINT	5
 #define IR_SCAN		6
 #define IR_ASSIGN	7
+#define IR_FUNCDEF	8
+#define IR_PUSH		9
+#define IR_CALL		10
+#define IR_RET		11
+#define IR_GOTO		12
+#define IR_BNZ		13
+#define IR_BZ		14
+#define IR_EQL		15
+#define IR_NEQ		16
+#define IR_LSS		17
+#define IR_LEQ		18
+#define IR_GRE		19
+#define IR_GEQ		20
+#define IR_LABEL	21
 
 extern const std::string irInstructions[];
 

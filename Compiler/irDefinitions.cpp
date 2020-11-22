@@ -8,5 +8,19 @@ const std::string irInstructions[] = {
 	"div",
 	"print",
 	"scan",
-	"assign"
+	"assign",
+	"funcdef",
+	"push",
+	"call",
+	"return",
+	"goto",
+	"bnz",
+	"bz",
+	"eql",
+	"neq",
+	"lss",
+	"leq",
+	"gre",
+	"geq",
+	"label"
 };

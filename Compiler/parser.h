@@ -29,6 +29,7 @@ public:
 	static SymbolNode* _常量(int* num);
 	static SymbolNode* _有返回值函數定義();
 	static SymbolNode* _無返回值函數定義();
+	static SymbolNode* _聲明頭部(int* type, std::string** str);
 	static SymbolNode* _聲明頭部();
 	static SymbolNode* _參數表();
 	static SymbolNode* _複合語句();
