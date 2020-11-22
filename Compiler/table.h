@@ -43,9 +43,13 @@ public:
 	bool isSameScope(int curScope);
 	bool isSameName(std::string* name);
 	// Getters
+	std::string* getName();
 	int getType();
 	int getRetType();
 	int getScope();
+	int getDimension();
+	int getDim0();
+	int getDim1();
 	int getParamNum();
 	std::vector<int>* getParamsRetType();
 	std::string* getLabel();

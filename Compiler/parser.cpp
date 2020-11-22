@@ -98,17 +98,6 @@ SymbolNode* Parser::_常量定義() {
 			}
 			else error();
 
-			if (TableItem::scope_i == 0) {
-				MipsGenerator::addData(new std::string("global_const_int_" + *str), str, num);
-			}
-			else {
-				std::stringstream ss;
-				std::string scope_i;
-				ss << TableItem::scope_i;
-				ss >> scope_i;
-				MipsGenerator::addData(new std::string("scope_" + scope_i + "_const_int_" + *str), str, num);
-			}
-
 			if (word->getType() == COMMA) {
 				node->addChild(new SymbolNode(word));
 				getsym();
@@ -133,17 +122,6 @@ SymbolNode* Parser::_常量定義() {
 				node->addChild(_字符(&num));
 			}
 			else error();
-
-			if (TableItem::scope_i == 0) {
-				MipsGenerator::addData(new std::string("global_const_char_" + *str), str, num);
-			}
-			else {
-				std::stringstream ss;
-				std::string scope_i;
-				ss << TableItem::scope_i;
-				ss >> scope_i;
-				MipsGenerator::addData(new std::string("scope_" + scope_i + "_const_char_" + *str), str, num);
-			}
 
 			if (word->getType() == COMMA) {
 				node->addChild(new SymbolNode(word));
@@ -316,7 +294,6 @@ SymbolNode* Parser::_變量定義() {
 SymbolNode* Parser::_變量定義無初始化() {
 	int type;
 	std::string* str;
-	bool isInt = word->getType() == INTTK;
 
 	SymbolNode* node = new SymbolNode(變量定義無初始化);
 	node->addChild(_類型標識符());
@@ -351,27 +328,6 @@ SymbolNode* Parser::_變量定義無初始化() {
 			}
 		}
 
-		if (TableItem::scope_i == 0) {
-			if (isInt) {
-				MipsGenerator::addData(new std::string("global_var_int_" + *str), str, 0);
-			}
-			else {
-				MipsGenerator::addData(new std::string("global_var_char_" + *str), str, 0);
-			}
-		}
-		else {
-			std::stringstream ss;
-			std::string scope_i;
-			ss << TableItem::scope_i;
-			ss >> scope_i;
-			if (isInt) {
-				MipsGenerator::addData(new std::string("scope_" + scope_i + "_var_int_" + *str), str, 0);
-			}
-			else {
-				MipsGenerator::addData(new std::string("scope_" + scope_i + "_var_char_" + *str), str, 0);
-			}
-		}
-
 		if (word->getType() == COMMA) {
 			node->addChild(new SymbolNode(word));
 			getsym();
@@ -393,7 +349,6 @@ SymbolNode* Parser::_變量定義無初始化() {
 SymbolNode* Parser::_變量定義及初始化() {
 	int type, num;
 	std::string* str;
-	bool isInt = word->getType() == INTTK;
 
 	SymbolNode* nodeForErrorO;
 	int numInDim1 = 0, numInDim2 = 0;	// The num of the elements in the array, can have two dimensions.
@@ -562,27 +517,6 @@ SymbolNode* Parser::_變量定義及初始化() {
 		// ERROR_O JUDGER STAGE 2 
 		TableTools::errorJudgerO(nodeForErrorO, 2);
 		// ERROR_O JUDGER STAGE 2 END
-
-		if (TableItem::scope_i == 0) {
-			if (isInt) {
-				MipsGenerator::addData(new std::string("global_var_int_" + *str), str, num);
-			}
-			else {
-				MipsGenerator::addData(new std::string("global_var_char_" + *str), str, num);
-			}
-		}
-		else {
-			std::stringstream ss;
-			std::string scope_i;
-			ss << TableItem::scope_i;
-			ss >> scope_i;
-			if (isInt) {
-				MipsGenerator::addData(new std::string("scope_" + scope_i + "_var_int_" + *str), str, num);
-			}
-			else {
-				MipsGenerator::addData(new std::string("scope_" + scope_i + "_var_char_" + *str), str, num);
-			}
-		}
 	}
 	return node;
 }

@@ -9,7 +9,7 @@ void doNothing() {
 }
 
 int main() {
-	int step = 5;
+	int step = 4;
 	LexicalAnalyzer::analyze();
 	(step == 1) ? LexicalAnalyzer::output() : doNothing();
 
@@ -18,10 +18,10 @@ int main() {
 
 	(step == 3) ? ErrorHandler::output() : doNothing();
 
-	//(step == 4) ? IrGenerator::output() : doNothing();
+	(step == 4) ? IrGenerator::output() : doNothing();
 
-	//MipsGenerator::generate();
-	//(step == 5) ? MipsGenerator::output() : doNothing();
+	MipsGenerator::generate();
+	(step == 5) ? MipsGenerator::output() : doNothing();
 
 	return 0;
 }

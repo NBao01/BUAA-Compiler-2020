@@ -51,6 +51,7 @@
 // DATA TYPE IN ASM
 #define _WORD	1
 #define _ASCIIZ	2
+#define __SPACE	3
 
 extern const std::string mipsInstructions[];
 extern const std::string regstr[];

@@ -163,8 +163,8 @@ bool TableItem::isSameName(std::string* name) {
 	return a == b;
 }
 
-int TableItem::getParamNum() {
-	return paramNum;
+std::string* TableItem::getName() {
+	return name;
 }
 
 int TableItem::getType() {
@@ -177,6 +177,22 @@ int TableItem::getRetType() {
 
 int TableItem::getScope() {
 	return scope;
+}
+
+int TableItem::getDimension() {
+	return dimension;
+}
+
+int TableItem::getDim0() {
+	return dims[0];
+}
+
+int TableItem::getDim1() {
+	return dims[1];
+}
+
+int TableItem::getParamNum() {
+	return paramNum;
 }
 
 std::vector<int>* TableItem::getParamsRetType() {
@@ -274,7 +290,7 @@ void TableTools::addConsts(int it) {
 void TableTools::addVars(int it) {
 	type = VAR;
 	int dimension = 0;
-	int dim0 = 0, dim1 = 0;
+	int dim0 = 1, dim1 = 1;	// Initialize to 1, so that 'dim0 * dim1 = num_of_array' no matter what the dimension is.
 	int initialValue = 0;
 	std::vector<int>* initialValues = nullptr;
 	for (int i = it_prev; i < it; i++) {
@@ -345,7 +361,7 @@ void TableTools::addVars(int it) {
 
 		if (wordlist[i]->getType() == COMMA || wordlist[i]->getType() == SEMICN) {
 			table.push_back(TableItem::newVarTableItem(name, type, retType, dimension, dim0, dim1, initialValue, initialValues));
-			dimension = 0; dim0 = 0; dim1 = 0;
+			dimension = 0; dim0 = 1; dim1 = 1;
 			initialValue = 0;
 			initialValues = nullptr;
 		}
@@ -652,6 +668,7 @@ TableItem* TableTools::search(std::string* name) {
 			return table[i];
 		}
 	}
+	return nullptr;
 }
 
 void TableTools::search(std::string* str, int* type, std::string** label) {

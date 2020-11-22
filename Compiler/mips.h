@@ -48,8 +48,9 @@ private:
 public:
 	static void output();
 	static void generate();
-	static void addData(std::string* label, std::string* strData);
-	static void addData(std::string* label, std::string* prototype, int data);
+	static void addDataAsciiz(std::string* label, std::string* strData);
+	static void addDataWord(std::string* label, std::string* prototype, int data);
+	static void addDataSpace(std::string* label, std::string* prototype, int space);
 	static void addR(int instr, int rs, int rt, int rd);
 	static void addI(int instr, int rs, int rt, int immediate, std::string* label);
 	static void addSyscall();

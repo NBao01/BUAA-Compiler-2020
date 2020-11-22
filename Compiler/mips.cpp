@@ -91,12 +91,16 @@ std::string* MipsGenerator::strConLabelGen() {
 	return new std::string(prefix + suffix);
 }
 
-void MipsGenerator::addData(std::string* label, std::string* strData) {
+void MipsGenerator::addDataAsciiz(std::string* label, std::string* strData) {
 	dataSegment.push_back(new DataItem(tolower(label), nullptr,  _ASCIIZ, 0, strData));
 }
 
-void MipsGenerator::addData(std::string* label, std::string* prototype, int data) {
+void MipsGenerator::addDataWord(std::string* label, std::string* prototype, int data) {
 	dataSegment.push_back(new DataItem(tolower(label), tolower(prototype), _WORD, data, nullptr));
+}
+
+void MipsGenerator::addDataSpace(std::string* label, std::string* prototype, int space) {
+	dataSegment.push_back(new DataItem(tolower(label), tolower(prototype), __SPACE, space, nullptr));
 }
 
 void MipsGenerator::addR(int instr, int rs, int rt, int rd) {
@@ -112,15 +116,38 @@ void MipsGenerator::addSyscall() {
 }
 
 void MipsGenerator::generate() {
+	// Initialize Regfile Manager
 	RegfileManager::init();
-	addData(new std::string("endl"), new std::string("\\n"));
+	// Add Global Consts and Vars to Data Segment
+	for (int i = 0; i < table.size(); i++) {
+		if (table[i]->isSameScope(0) && table[i]->getType() != FUNC) {
+			if (table[i]->getDimension() == 0) {
+				addDataWord(table[i]->getLabel(), table[i]->getName(), table[i]->getInitialValue());
+			}
+			else /* if (table[i]->getDimension() > 0) */{
+				if (table[i]->getInitialValues() != nullptr) { // Initialized
+					std::vector<int>* initialValues = table[i]->getInitialValues();
+					addDataWord(table[i]->getLabel(), table[i]->getName(), initialValues->at(0));
+					for (int j = 1; j < table[i]->getDim0() * table[i]->getDim1(); j++) {
+						addDataWord(nullptr, table[i]->getName(), initialValues->at(j));
+					}
+				}
+				else {
+					addDataSpace(table[i]->getLabel(), 
+						table[i]->getName(), table[i]->getDim0() * table[i]->getDim1() * 4);
+				}
+			}
+		}
+		else { break; }
+	}
+	addDataAsciiz(new std::string("endl"), new std::string("\\n"));
 	std::vector<IrItem*>::iterator it;
 	for (it = IrList.begin(); it != IrList.end(); it++) {
 		IrItem* ir = *it;
 		if (ir->getOp() == IR_PRINT) {
 			if (ir->getLopType() == STRTYPE) {
 				std::string* strLabel = strConLabelGen();
-				addData(strLabel, ir->getLop());
+				addDataAsciiz(strLabel, ir->getLop());
 				addI(MIPS_LA, 0, $a0, 0, strLabel);
 				addI(MIPS_LI, 0, $v0, 4, nullptr);
 				addSyscall();
@@ -259,7 +286,15 @@ void MipsGenerator::output() {
 				"\"" << *(*dataIt)->getStrData() << "\"" << std::endl;
 		}
 		else if ((*dataIt)->getDataType() == _WORD) {
-			out << "\t" << *(*dataIt)->getLabel() << ": .word " << (*dataIt)->getData() << std::endl;
+			if ((*dataIt)->getLabel() != nullptr) {
+				out << "\t" << *(*dataIt)->getLabel() << ": .word " << (*dataIt)->getData() << std::endl;
+			}
+			else { // For array, while not_first elements don't need a label.
+				out << "\t\t" << ".word " << (*dataIt)->getData() << std::endl;
+			}
+		}
+		else if ((*dataIt)->getDataType() == __SPACE) {
+			out << "\t" << *(*dataIt)->getLabel() << ": .space " << (*dataIt)->getData() << std::endl;
 		}
 	}
 
