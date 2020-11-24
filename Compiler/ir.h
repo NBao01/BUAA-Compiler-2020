@@ -55,6 +55,8 @@ public:
 	static void addReturnIr(int type, int num, std::string* lop);
 	static void addCallIr(int type, std::string* lop);
 	static void addPushIr(int type, int num, std::string* lop);
+	//static std::string* addArraygetIr(int lopType, int ropType, int lopInt, int ropInt,
+	//	std::string* lop, std::string* rop, std::string* res = nullptr);
 };
 
 #endif // !__IR_H__

@@ -1150,13 +1150,25 @@ SymbolNode* Parser::_因子(int* type, int* num, std::string** str) {
 		// ERROR_C JUDGER END
 
 		node->addChild(_標識符(type, str));
+		TableItem* ti = TableTools::search(*str);
+		int type2 = 0, num2 = 0;	std::string* str2 = nullptr;
 		int line; SymbolNode* nodeForErrorI;
 		if (word->getType() == LBRACK) {
 			node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
 			getsym();
 			// ERROR_I JUDGER
 			line = word->getLine();
-			node->addChild((nodeForErrorI = _表達式()));
+			node->addChild((nodeForErrorI = _表達式(&type2, &num2, &str2)));
+			if (ti->getDimension() == 1) {
+				*str = IrGenerator::addNormalIr(IR_ARRAYGET, *type, type2, 0, num2, *str, str2);
+				*type = TMPTYPE;
+				*num = 0;
+			}
+			else {
+				str2 = IrGenerator::addNormalIr(IR_MUL, type2, INTTYPE, num2, ti->getDim1(), str2, nullptr);
+				type2 = TMPTYPE;
+				num2 = 0;
+			}
 			if (TableTools::isCharType(nodeForErrorI)) {
 				ErrorHandler::addErrorItem(ERROR_I, line);
 			}
@@ -1171,11 +1183,18 @@ SymbolNode* Parser::_因子(int* type, int* num, std::string** str) {
 				// ERROR_M JUDGER END
 			}
 			if (word->getType() == LBRACK) {
+				int type3 = 0, num3 = 0;	std::string* str3 = nullptr;
 				node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
 				getsym();
 				// ERROR_I JUDGER
 				line = word->getLine();
-				node->addChild((nodeForErrorI = _表達式()));
+				node->addChild((nodeForErrorI = _表達式(&type3, &num3, &str3)));
+				str2 = IrGenerator::addNormalIr(IR_ADD, type2, type3, num2, num3, str2, str3);
+				type2 = TMPTYPE;
+				num2 = 0;
+				*str = IrGenerator::addNormalIr(IR_ARRAYGET, *type, type2, 0, num2, *str, str2);
+				*type = TMPTYPE;
+				*num = 0;
 				if (TableTools::isCharType(nodeForErrorI)) {
 					ErrorHandler::addErrorItem(ERROR_I, line);
 				}
@@ -1528,13 +1547,19 @@ SymbolNode* Parser::_賦值語句() {
 	// ERROR_J JUDGER END
 
 	res = &word->getWord();
+	TableItem* ti = TableTools::search(res);
+	int type2 = 0, num2 = 0;	std::string* str2 = nullptr;
 	node->addChild(_標識符());
 	if (word->getType() == LBRACK) {
 		node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
 		getsym();
 		// ERROR_I JUDGER
 		line = word->getLine();
-		node->addChild((nodeForErrorI = _表達式()));
+		node->addChild((nodeForErrorI = _表達式(&type2, &num2, &str2)));
+		if (ti->getDimension() == 2) {
+			str2 = IrGenerator::addNormalIr(IR_MUL, type2, INTTYPE, num2, ti->getDim1(), str2, nullptr);
+			num2 = 0;  type2 = TMPTYPE;
+		}
 		if (TableTools::isCharType(nodeForErrorI)) {
 			ErrorHandler::addErrorItem(ERROR_I, line);
 		}
@@ -1549,11 +1574,14 @@ SymbolNode* Parser::_賦值語句() {
 			// ERROR_M JUDGER END
 		}
 		if (word->getType() == LBRACK) {
+			int type3 = 0, num3 = 0;	std::string* str3 = nullptr;
 			node->addChild(new SymbolNode(word));	// word->getType() is LBRACK
 			getsym();
 			// ERROR_I JUDGER
 			line = word->getLine();
-			node->addChild((nodeForErrorI = _表達式()));
+			node->addChild((nodeForErrorI = _表達式(&type3, &num3, &str3)));
+			str2 = IrGenerator::addNormalIr(IR_ADD, type2, type3, num2, num3, str2, str3);
+			num2 = 0;   type2 = TMPTYPE;
 			if (TableTools::isCharType(nodeForErrorI)) {
 				ErrorHandler::addErrorItem(ERROR_I, line);
 			}
@@ -1572,7 +1600,12 @@ SymbolNode* Parser::_賦值語句() {
 	node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
 	getsym();
 	node->addChild(_表達式(&type, &num, &str));
-	IrGenerator::addAssignIr(res, type, num, str);
+	if (ti->getDimension() == 0) {
+		IrGenerator::addAssignIr(res, type, num, str);
+	}
+	else {
+		IrGenerator::addNormalIr(IR_ARRAYSET, type, type2, num, num2, str, str2, res);
+	}
 	return node;
 }
 

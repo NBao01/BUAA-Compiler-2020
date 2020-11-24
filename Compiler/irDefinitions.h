@@ -24,6 +24,8 @@
 #define IR_GRE		19
 #define IR_GEQ		20
 #define IR_LABEL	21
+#define IR_ARRAYGET 22
+#define IR_ARRAYSET 23
 
 extern const std::string irInstructions[];
 

@@ -157,6 +157,39 @@ void IrGenerator::output() {
 				out << irInstructions[op] << " " << (*it)->getLopInt() << std::endl;
 			}
 		}
+		else if (op == IR_ARRAYGET) {
+			assert((*it)->getLopType() == IDTYPE);
+			out << "assign " << *(*it)->getLop() << "[";
+			assert((*it)->getRopType() != CHTYPE);
+			if ((*it)->getRopType() == INTTYPE) {
+				out << (*it)->getRopInt();
+			}
+			else if ((*it)->getRopType() == IDTYPE || (*it)->getRopType() == TMPTYPE) {
+				out << *(*it)->getRop();
+			}
+			out << "] " << *(*it)->getRes() << std::endl;
+		}
+		else if (op == IR_ARRAYSET) {
+			out << "assign ";
+			if ((*it)->getLopType() == INTTYPE) {
+				out << (*it)->getLopInt();
+			}
+			else if ((*it)->getLopType() == CHTYPE) {
+				out << "'" << *(*it)->getLop() << "'";
+			}
+			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
+				out << *(*it)->getLop();
+			}
+			out << " " << *(*it)->getRes() << "[";
+			assert((*it)->getRopType() != CHTYPE);
+			if ((*it)->getRopType() == INTTYPE) {
+				out << (*it)->getRopInt();
+			}
+			else if ((*it)->getRopType() == IDTYPE || (*it)->getRopType() == TMPTYPE) {
+				out << *(*it)->getRop();
+			}
+			out << "]" << std::endl;
+		}
 	}
 	out.close();
 }

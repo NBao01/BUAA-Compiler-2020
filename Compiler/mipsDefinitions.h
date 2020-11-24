@@ -13,6 +13,7 @@
 #define MIPS_LI			7
 #define MIPS_LA			8
 #define MIPS_SYSCALL	9
+#define MIPS_LABEL		10
 
 // REGISTER FILE
 #define $zero	0
