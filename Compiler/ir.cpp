@@ -60,12 +60,117 @@ std::string* IrItem::getRes() {
 	return res;
 }
 
-std::string* IrGenerator::labelGen() {
+void IrItem::setRes(std::string* newRes) {
+	res = newRes;
+}
+
+std::string* IrGenerator::tempIdentifierGen(bool rollback) {
 	static int i = 0;
+	if (rollback) {
+		i--;
+		return nullptr;
+	}
 	std::string prefix = "$temp_";
 	std::string suffix;
 	std::stringstream ss;
 	ss << i++;
+	ss >> suffix;
+	return new std::string(prefix + suffix);
+}
+
+std::string* IrGenerator::ifLabelGen() {
+	static int i = 0;
+	std::string prefix = "If_Else_";
+	std::string suffix;
+	std::stringstream ss;
+	ss << i++;
+	ss >> suffix;
+	return new std::string(prefix + suffix);
+}
+
+std::string* IrGenerator::endifLabelGen() {
+	static int i = 0;
+	std::string prefix = "Endif_";
+	std::string suffix;
+	std::stringstream ss;
+	ss << i++;
+	ss >> suffix;
+	return new std::string(prefix + suffix);
+}
+
+std::string* IrGenerator::whileLabelGen() {
+	static int i = 0;
+	std::string prefix = "While_";
+	std::string suffix;
+	std::stringstream ss;
+	ss << i++;
+	ss >> suffix;
+	return new std::string(prefix + suffix);
+}
+
+std::string* IrGenerator::endwhileLabelGen() {
+	static int i = 0;
+	std::string prefix = "Endwhile_";
+	std::string suffix;
+	std::stringstream ss;
+	ss << i++;
+	ss >> suffix;
+	return new std::string(prefix + suffix);
+}
+
+std::string* IrGenerator::forLabelGen() {
+	static int i = 0;
+	std::string prefix = "For_";
+	std::string suffix;
+	std::stringstream ss;
+	ss << i++;
+	ss >> suffix;
+	return new std::string(prefix + suffix);
+}
+
+std::string* IrGenerator::endforLabelGen() {
+	static int i = 0;
+	std::string prefix = "Endfor_";
+	std::string suffix;
+	std::stringstream ss;
+	ss << i++;
+	ss >> suffix;
+	return new std::string(prefix + suffix);
+}
+
+std::string* IrGenerator::switchLabelGen(bool _case, bool _default, bool endswitch) {
+	static int i = -1;
+	static int j = 0;
+
+	if (endswitch) {
+		std::string prefix = "Endswitch_";
+		std::string suffix;
+		std::stringstream ss;
+		ss << i;
+		ss >> suffix;
+		return new std::string(prefix + suffix);
+	}
+	if (_default) {
+		std::string prefix = "Switch_";
+		std::string suffix;
+		std::stringstream ss;
+		ss << i << "_default";
+		ss >> suffix;
+		return new std::string(prefix + suffix);
+	}
+	if (_case) {
+		std::string prefix = "Switch_";
+		std::string suffix;
+		std::stringstream ss;
+		ss << i << "_case_" << j++;
+		ss >> suffix;
+		return new std::string(prefix + suffix);
+	}
+	j = 0;
+	std::string prefix = "Switch_";
+	std::string suffix;
+	std::stringstream ss;
+	ss << ++i;
 	ss >> suffix;
 	return new std::string(prefix + suffix);
 }
@@ -75,24 +180,26 @@ void IrGenerator::output() {
 	std::vector<IrItem*>::iterator it;
 	for (it = IrList.begin(); it != IrList.end(); ++it) {
 		int op = (*it)->getOp();
-		if (op == IR_PRINT) {
+		switch (op) {
+		case IR_PRINT:
+			out << irInstructions[op] << " ";
 			if ((*it)->getLopType() == STRTYPE) {
-				out << irInstructions[op] << " " << "\"" << *(*it)->getLop() << "\"" << std::endl;
+				out << "\"" << *(*it)->getLop() << "\"" << std::endl;
 			}
 			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
-				out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;
+				out << *(*it)->getLop() << std::endl;
 			}
 			else if ((*it)->getLopType() == INTTYPE) {
-				out << irInstructions[op] << " " << (*it)->getLopInt() << std::endl;
+				out << (*it)->getLopInt() << std::endl;
 			}
 			else if ((*it)->getLopType() == CHTYPE) {
-				out << irInstructions[op] << " '" << *(*it)->getLop() << "'" << std::endl;
+				out << "'" << *(*it)->getLop() << "'" << std::endl;
 			}
-		}
-		else if (op == IR_SCAN) {
+			break;
+		case IR_SCAN:
 			out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;
-		}
-		else if (op == IR_ASSIGN) {
+			break;
+		case IR_ASSIGN:
 			out << irInstructions[op] << " ";
 			if ((*it)->getLopType() == INTTYPE) {
 				out << (*it)->getLopInt();
@@ -104,8 +211,11 @@ void IrGenerator::output() {
 				out << *(*it)->getLop();
 			}
 			out << " " << *(*it)->getRes() << std::endl;
-		}
-		else if (op >= IR_ADD && op <= IR_DIV) {
+			break;
+		case IR_ADD:
+		case IR_SUB:
+		case IR_MUL:
+		case IR_DIV:
 			out << irInstructions[op] << " ";
 			if ((*it)->getLopType() == INTTYPE) {
 				out << (*it)->getLopInt();
@@ -127,39 +237,30 @@ void IrGenerator::output() {
 				out << *(*it)->getRop();
 			}
 			out << " " << *(*it)->getRes() << std::endl;
-		}
-		else if (op == IR_FUNCDEF) {
+			break;
+		case IR_FUNCDEF:
 			out << std::endl;
 			out << *(*it)->getLop() << "()" << std::endl;
-		}
-		else if (op == IR_RET) {
+			break;
+		case IR_RET:
+		case IR_PUSH:
+			out << irInstructions[op] << " ";
 			if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
-				out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;
+				out << *(*it)->getLop() << std::endl;
 			}
 			else if ((*it)->getLopType() == CHTYPE) {
-				out << irInstructions[op] << " " << "'" << *(*it)->getLop() << "'" << std::endl;
+				out  << "'" << *(*it)->getLop() << "'" << std::endl;
 			}
 			else if ((*it)->getLopType() == INTTYPE) {
-				out << irInstructions[op] << " " << (*it)->getLopInt() << std::endl;
+				out  << (*it)->getLopInt() << std::endl;
 			}
-		}
-		else if (op == IR_CALL) {
+			break;
+		case IR_CALL:
 			out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;
-		}
-		else if (op == IR_PUSH) {
-			if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
-				out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;
-			}
-			else if ((*it)->getLopType() == CHTYPE) {
-				out << irInstructions[op] << " " << "'" << *(*it)->getLop() << "'" << std::endl;
-			}
-			else if ((*it)->getLopType() == INTTYPE) {
-				out << irInstructions[op] << " " << (*it)->getLopInt() << std::endl;
-			}
-		}
-		else if (op == IR_ARRAYGET) {
+			break;
+		case IR_ARRAYGET:
 			assert((*it)->getLopType() == IDTYPE);
-			out << "assign " << *(*it)->getLop() << "[";
+			out << irInstructions[op] << " " << *(*it)->getLop() << "[";
 			assert((*it)->getRopType() != CHTYPE);
 			if ((*it)->getRopType() == INTTYPE) {
 				out << (*it)->getRopInt();
@@ -168,9 +269,9 @@ void IrGenerator::output() {
 				out << *(*it)->getRop();
 			}
 			out << "] " << *(*it)->getRes() << std::endl;
-		}
-		else if (op == IR_ARRAYSET) {
-			out << "assign ";
+			break;
+		case IR_ARRAYSET:
+			out << irInstructions[op] << " ";
 			if ((*it)->getLopType() == INTTYPE) {
 				out << (*it)->getLopInt();
 			}
@@ -189,6 +290,43 @@ void IrGenerator::output() {
 				out << *(*it)->getRop();
 			}
 			out << "]" << std::endl;
+			break;
+		case IR_LSS:
+		case IR_LEQ:
+		case IR_GRE:
+		case IR_GEQ:
+		case IR_EQL:
+		case IR_NEQ:
+			out << irInstructions[op] << " ";
+			if ((*it)->getLopType() == INTTYPE) {
+				out << (*it)->getLopInt();
+			}
+			else if ((*it)->getLopType() == CHTYPE) {
+				out << "'" << *(*it)->getLop() << "'";
+			}
+			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
+				out << *(*it)->getLop();
+			}
+			out << " ";
+			if ((*it)->getRopType() == INTTYPE) {
+				out << (*it)->getRopInt();
+			}
+			else if ((*it)->getRopType() == CHTYPE) {
+				out << "'" << *(*it)->getRop() << "'";
+			}
+			else if ((*it)->getRopType() == IDTYPE || (*it)->getRopType() == TMPTYPE) {
+				out << *(*it)->getRop();
+			}
+			out << std::endl;
+			break;
+		case IR_LABEL:
+			out << *(*it)->getRes() << ":" << std::endl;
+			break;
+		case IR_BZ:
+		case IR_BNZ:
+		case IR_GOTO: 
+			out << irInstructions[op] << " " << *(*it)->getRes() << std::endl;
+			break;
 		}
 	}
 	out.close();
@@ -207,12 +345,21 @@ void IrGenerator::addScanIr(std::string* str) {
 }
 
 void IrGenerator::addAssignIr(std::string* res, int lopType, int lopInt, std::string* lop) {
-	IrList.push_back(new IrItem(IR_ASSIGN, lopType, NOTYPE, lopInt, 0, lop, nullptr, res));
+	// If R-value of Assign statement is a expression, we don't need an assign ir, instead of modify last ir's res.
+	if (lopType == TMPTYPE) {
+		IrItem* lastIr = IrList.back();
+		assert(*lastIr->getRes() == *lop);
+		lastIr->setRes(res);
+		tempIdentifierGen(true);	// rollback a temp identifier
+	}
+	else {
+		IrList.push_back(new IrItem(IR_ASSIGN, lopType, NOTYPE, lopInt, 0, lop, nullptr, res));
+	}
 }
 
 std::string* IrGenerator::addNormalIr(int op, int lopType, int ropType, int lopInt, int ropInt,
 	std::string* lop, std::string* rop, std::string* res) {
-	std::string* ret = res ? res : labelGen();
+	std::string* ret = res ? res : tempIdentifierGen();
 	IrList.push_back(new IrItem(op, lopType, ropType, lopInt, ropInt, lop, rop, ret));
 	return ret;
 }
@@ -233,4 +380,36 @@ void IrGenerator::addCallIr(int type, std::string* lop) {
 
 void IrGenerator::addPushIr(int type, int num, std::string* lop) {
 	IrList.push_back(new IrItem(IR_PUSH, type, NOTYPE, num, 0, lop, nullptr, nullptr));
+}
+
+void IrGenerator::addComparisonIr(
+	int op, int lopType, int ropType, int lopInt, int ropInt, std::string* lop, std::string* rop) {
+	IrList.push_back(new IrItem(op, lopType, ropType, lopInt, ropInt, lop, rop, nullptr));
+}
+
+void IrGenerator::addLabelIr(std::string* label) {
+	IrList.push_back(new IrItem(IR_LABEL, NOTYPE, NOTYPE, 0, 0, nullptr, nullptr, label));
+}
+
+void IrGenerator::addBnzIr(std::string* label) {
+	IrList.push_back(new IrItem(IR_BNZ, NOTYPE, NOTYPE, 0, 0, nullptr, nullptr, label));
+}
+
+void IrGenerator::addBzIr(std::string* label) {
+	IrList.push_back(new IrItem(IR_BZ, NOTYPE, NOTYPE, 0, 0, nullptr, nullptr, label));
+}
+
+void IrGenerator::addGotoIr(std::string* label) {
+	IrList.push_back(new IrItem(IR_GOTO, NOTYPE, NOTYPE, 0, 0, nullptr, nullptr, label));
+}
+
+void IrGenerator::addToLastSwitch(std::vector<IrItem*>* before, std::string* label_switch) {
+	std::vector<IrItem*>::iterator it;
+	for (it = IrList.end() - 1; ; --it) {
+		if ((*it)->getOp() == IR_LABEL && *label_switch == *(*it)->getRes()) {
+			break;
+		}
+	}
+
+	IrList.insert(it + 1, before->begin(), before->end());
 }

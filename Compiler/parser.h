@@ -3,6 +3,8 @@
 
 #include "wordlist.h"
 #include "abstractSyntaxTree.h"
+#include "ir.h"
+#include <vector>
 
 void getsym();
 
@@ -40,7 +42,7 @@ public:
 	static SymbolNode* _條件();
 	static SymbolNode* _表達式();
 	static SymbolNode* _表達式(int* type, int* num, std::string** str);
-	static SymbolNode* _步長();
+	static SymbolNode* _步長(int* num);
 	static SymbolNode* _關係運算符();
 	static SymbolNode* _項();
 	static SymbolNode* _項(int* type, int* num, std::string** str);
@@ -55,9 +57,9 @@ public:
 	static SymbolNode* _字符串(std::string** str);
 	static SymbolNode* _返回語句();
 	static SymbolNode* _情況語句();
-	static SymbolNode* _情況表();
-	static SymbolNode* _缺省();
-	static SymbolNode* _情況子語句();
+	static SymbolNode* _情況表(int type, int num, std::string* str, std::vector<IrItem*>* before);
+	static SymbolNode* _缺省(std::vector<IrItem*>* before);
+	static SymbolNode* _情況子語句(int type, int num, std::string* str, std::vector<IrItem*>* before);
 	static SymbolNode* _賦值語句();
 	static SymbolNode* _無返回值函數調用語句();
 	static SymbolNode* _主函數();

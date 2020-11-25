@@ -35,14 +35,22 @@ public:
 	std::string* getLop();
 	std::string* getRop();
 	std::string* getRes();
+	void setRes(std::string* newRes);
 };
 
 extern std::vector<IrItem*> IrList;
 
 class IrGenerator {
 private:
-	static std::string* labelGen();
+	static std::string* tempIdentifierGen(bool rollback = 0);
 public:
+	static std::string* ifLabelGen();
+	static std::string* endifLabelGen();
+	static std::string* whileLabelGen();
+	static std::string* endwhileLabelGen();
+	static std::string* forLabelGen();
+	static std::string* endforLabelGen();
+	static std::string* switchLabelGen(bool _case = false, bool _default = false, bool endswitch = false);
 	static void output();
 	static void addPrintStrIr(std::string* str); // add 'printf(string)' IR
 	static void addPrintExpIr(int type, int num, std::string* str); // add 'printf(expression)' IR
@@ -55,8 +63,13 @@ public:
 	static void addReturnIr(int type, int num, std::string* lop);
 	static void addCallIr(int type, std::string* lop);
 	static void addPushIr(int type, int num, std::string* lop);
-	//static std::string* addArraygetIr(int lopType, int ropType, int lopInt, int ropInt,
-	//	std::string* lop, std::string* rop, std::string* res = nullptr);
+	static void addComparisonIr(
+		int op, int lopType, int ropType, int lopInt, int ropInt,std::string* lop, std::string* rop);
+	static void addLabelIr(std::string* label);
+	static void addBnzIr(std::string* label);	// 满足条件
+	static void addBzIr(std::string* label);	// 不满足条件
+	static void addGotoIr(std::string* label);
+	static void addToLastSwitch(std::vector<IrItem*>* before, std::string* label_switch);
 };
 
 #endif // !__IR_H__

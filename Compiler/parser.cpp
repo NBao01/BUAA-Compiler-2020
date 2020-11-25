@@ -811,11 +811,19 @@ SymbolNode* Parser::_語句() {
 SymbolNode* Parser::_循環語句() {
 	SymbolNode* node = new SymbolNode(循環語句);
 	if (word->getType() == WHILETK) {
+
+		std::string* label_while = IrGenerator::whileLabelGen();
+		std::string* label_endwhile = IrGenerator::endwhileLabelGen();
+		IrGenerator::addLabelIr(label_while);
+
 		node->addChild(new SymbolNode(word));
 		getsym();
 		node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 		getsym();
 		node->addChild(_條件());
+
+		IrGenerator::addBzIr(label_endwhile);
+
 		if (word->getType() == RPARENT) {
 			node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 			getsym();
@@ -826,8 +834,21 @@ SymbolNode* Parser::_循環語句() {
 			// ERROR_L JUDGER END
 		}
 		node->addChild(_語句());
+
+		IrGenerator::addGotoIr(label_while);
+		IrGenerator::addLabelIr(label_endwhile);
 	}
 	else if (word->getType() == FORTK) {
+
+		int type1 = 0;	std::string* str1 = nullptr;
+		int type2 = 0, num2 = 0;	std::string* str2 = nullptr;
+		int type3 = 0;	std::string* str3 = nullptr;
+		int type4 = 0;	std::string* str4 = nullptr;
+		bool isPlus = false;
+		int step = 0;
+		std::string* label_for = IrGenerator::forLabelGen();
+		std::string* label_endfor = IrGenerator::endforLabelGen();
+
 		node->addChild(new SymbolNode(word));
 		getsym();
 		node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
@@ -841,10 +862,14 @@ SymbolNode* Parser::_循環語句() {
 		TableTools::errorJudgerJ(word);
 		// ERROR_J JUDGER END
 
-		node->addChild(_標識符());
+		node->addChild(_標識符(&type1, &str1));
 		node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
 		getsym();
-		node->addChild(_表達式());
+		node->addChild(_表達式(&type2, &num2, &str2));
+
+		IrGenerator::addAssignIr(str1, type2, num2, str2);
+		IrGenerator::addLabelIr(label_for);
+
 		if (word->getType() == SEMICN) {
 			node->addChild(new SymbolNode(word));	// word->getType() is SEMICN
 			getsym();
@@ -864,13 +889,17 @@ SymbolNode* Parser::_循環語句() {
 			ErrorHandler::addErrorItem(ERROR_K, prevWord->getLine());
 			// ERROR_K JUDGER END
 		}
-		node->addChild(_標識符());
+
+		IrGenerator::addBzIr(label_endfor);
+
+		node->addChild(_標識符(&type3, &str3));
 		node->addChild(new SymbolNode(word));	// word->getType() is ASSIGN
 		getsym();
-		node->addChild(_標識符());
+		node->addChild(_標識符(&type4, &str4));
+		isPlus = (word->getType() == PLUS);
 		node->addChild(new SymbolNode(word));	// word->getType() is PLUS or MINU
 		getsym();
-		node->addChild(_步長());
+		node->addChild(_步長(&step));
 		if (word->getType() == RPARENT) {
 			node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 			getsym();
@@ -881,6 +910,15 @@ SymbolNode* Parser::_循環語句() {
 			// ERROR_L JUDGER END
 		}
 		node->addChild(_語句());
+
+		if (isPlus) {
+			IrGenerator::addNormalIr(IR_ADD, IDTYPE, INTTYPE, 0, step, str4, nullptr, str3);
+		}
+		else {
+			IrGenerator::addNormalIr(IR_SUB, IDTYPE, INTTYPE, 0, step, str4, nullptr, str3);
+		}
+		IrGenerator::addGotoIr(label_for);
+		IrGenerator::addLabelIr(label_endfor);
 	}
 	return node;
 }
@@ -893,6 +931,11 @@ SymbolNode* Parser::_條件語句() {
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild(_條件());
+
+	std::string* label_if_else = IrGenerator::ifLabelGen();
+	std::string* label_endif = IrGenerator::endifLabelGen();
+	IrGenerator::addBzIr(label_if_else);
+
 	if (word->getType() == RPARENT) {
 		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 		getsym();
@@ -904,9 +947,19 @@ SymbolNode* Parser::_條件語句() {
 	}
 	node->addChild(_語句());
 	if (word->getType() == ELSETK) {
+
+		IrGenerator::addGotoIr(label_endif);
+		IrGenerator::addLabelIr(label_if_else);
+
 		node->addChild(new SymbolNode(word));	// word->getType() is ELSETK
 		getsym();
 		node->addChild(_語句());
+
+		IrGenerator::addLabelIr(label_endif);
+	}
+	else {
+		IrGenerator::addLabelIr(label_if_else);
+		delete label_endif;
 	}
 	return node;
 }
@@ -915,25 +968,31 @@ SymbolNode* Parser::_條件語句() {
 SymbolNode* Parser::_條件() {
 	int line; SymbolNode* nodeForErrorF;
 	SymbolNode* node = new SymbolNode(條件);
+	int type1 = 0, num1 = 0;	std::string* str1 = nullptr;
+	int type2 = 0, num2 = 0;	std::string* str2 = nullptr;
+	int irOp;
 
 	// ERROR_F JUDGER
 	line = word->getLine();
-	node->addChild((nodeForErrorF = _表達式()));
+	node->addChild((nodeForErrorF = _表達式(&type1, &num1, &str1)));
 	if (TableTools::isCharType(nodeForErrorF)) {
 		ErrorHandler::addErrorItem(ERROR_F, line);
 	}
 	// ERROR_F JUDGER END
 
+	assert(word->getType() >= LSS && word->getType() <= NEQ);
+	irOp = word->getType() - 9;	// LSS to NEQ in irDefinitions.h is 9 less than that in tokens.h
 	node->addChild(_關係運算符());
 
 	// ERROR_F JUDGER
 	line = word->getLine();
-	node->addChild((nodeForErrorF = _表達式()));
+	node->addChild((nodeForErrorF = _表達式(&type2, &num2, &str2)));
 	if (TableTools::isCharType(nodeForErrorF)) {
 		ErrorHandler::addErrorItem(ERROR_F, line);
 	}
 	// ERROR_F JUDGER END
 
+	IrGenerator::addComparisonIr(irOp, type1, type2, num1, num2, str1, str2);
 	return node;
 }
 
@@ -991,9 +1050,9 @@ SymbolNode* Parser::_表達式(int* type, int* num, std::string** str) {
 }
 
 // ＜步长＞::= ＜无符号整数＞  
-SymbolNode* Parser::_步長() {
+SymbolNode* Parser::_步長(int *num) {
 	SymbolNode* node = new SymbolNode(步長);
-	node->addChild(_無符號整數());
+	node->addChild(_無符號整數(num));
 	return node;
 }
 
@@ -1455,11 +1514,17 @@ SymbolNode* Parser::_返回語句() {
 SymbolNode* Parser::_情況語句() {
 	SymbolNode* nodeForErrorO;
 	SymbolNode* node = new SymbolNode(情況語句);
+	int type = 0, num = 0;	std::string* str = nullptr;
+	std::vector<IrItem*> before;
+
+	std::string* label_switch = IrGenerator::switchLabelGen();
+	IrGenerator::addLabelIr(label_switch);	//	Switch Label
+
 	node->addChild(new SymbolNode(word));	// word->getType() is SWITCHTK
 	getsym();
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
-	node->addChild((nodeForErrorO = _表達式()));
+	node->addChild((nodeForErrorO = _表達式(&type, &num, &str)));
 
 	// ERROR_O JUDGER STAGE 1 
 	TableTools::errorJudgerO(nodeForErrorO, 1);
@@ -1476,9 +1541,9 @@ SymbolNode* Parser::_情況語句() {
 	}
 	node->addChild(new SymbolNode(word));	// word->getType() is LBRACE
 	getsym();
-	node->addChild(_情況表());
+	node->addChild(_情況表(type, num, str, &before));
 	if (word->getType() == DEFAULTTK) {
-		node->addChild(_缺省());
+		node->addChild(_缺省(&before));
 	}
 	else {
 		// ERROR_P JUDGER
@@ -1487,36 +1552,46 @@ SymbolNode* Parser::_情況語句() {
 	}
 	node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
 	getsym();
+
+	IrGenerator::addToLastSwitch(&before, label_switch);
+
 	return node;
 }
 
 // ＜情况表＞ ::= ＜情况子语句＞{＜情况子语句＞}
-SymbolNode* Parser::_情況表() {
+SymbolNode* Parser::_情況表(int type, int num, std::string* str, std::vector<IrItem*>* before) {
 	SymbolNode* node = new SymbolNode(情況表);
 	while (word->getType() == CASETK) {
-		node->addChild(_情況子語句());
+		node->addChild(_情況子語句(type, num, str, before));
 	}
 	return node;
 }
 
 // ＜缺省＞ ::= default :＜语句＞
-SymbolNode* Parser::_缺省() {
+SymbolNode* Parser::_缺省(std::vector<IrItem*>* before) {
 	SymbolNode* node = new SymbolNode(缺省);
 	node->addChild(new SymbolNode(word));	// word->getType() is DEFAULTTK
 	getsym();
 	node->addChild(new SymbolNode(word));	// word->getType() is COLON
 	getsym();
+
+	std::string* label_default = IrGenerator::switchLabelGen(true, true);	// default gen
+	before->push_back(new IrItem(IR_GOTO, 0, 0, 0, 0, nullptr, nullptr, label_default));
+
+	IrGenerator::addLabelIr(label_default);
 	node->addChild(_語句());
+	IrGenerator::addLabelIr(IrGenerator::switchLabelGen(true, true, true));
 	return node;
 }
 
 //＜情况子语句＞ :: = case＜常量＞：＜语句＞
-SymbolNode* Parser::_情況子語句() {
+SymbolNode* Parser::_情況子語句(int type, int num, std::string* str, std::vector<IrItem*>* before) {
 	SymbolNode* nodeForErrorO;
 	SymbolNode* node = new SymbolNode(情況子語句);
+	int con = 0;
 	node->addChild(new SymbolNode(word));	// word->getType() is CASETK
 	getsym();
-	node->addChild((nodeForErrorO = _常量()));
+	node->addChild((nodeForErrorO = _常量(&con)));
 
 	// ERROR_O JUDGER STAGE 2 
 	TableTools::errorJudgerO(nodeForErrorO, 2);
@@ -1524,7 +1599,14 @@ SymbolNode* Parser::_情況子語句() {
 
 	node->addChild(new SymbolNode(word));	// word->getType() is COLON
 	getsym();
+
+	before->push_back(new IrItem(IR_EQL, type, INTTYPE, num, con, str, nullptr, nullptr));
+	std::string* label_case = IrGenerator::switchLabelGen(true);	// case gen
+	before->push_back(new IrItem(IR_BZ, 0, 0, 0, 0, nullptr, nullptr, label_case));
+
+	IrGenerator::addLabelIr(label_case);
 	node->addChild(_語句());
+	IrGenerator::addGotoIr(IrGenerator::switchLabelGen(true, true, true));
 	return node;
 }
 
