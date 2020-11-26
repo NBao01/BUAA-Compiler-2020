@@ -139,6 +139,7 @@ std::string* IrGenerator::endforLabelGen() {
 	return new std::string(prefix + suffix);
 }
 
+// This is a logic-complex function. Should be very careful, always think about it.
 std::string* IrGenerator::switchLabelGen(bool _case, bool _default, bool endswitch, bool lastLabel) {
 	static std::stack<int> ijStack;
 	static int level = 0;	// switch可能會嵌套，因此記錄當前嵌套層數，否則i、j可能會"一去不復返"
