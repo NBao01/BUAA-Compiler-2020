@@ -50,7 +50,7 @@ public:
 	static std::string* endwhileLabelGen();
 	static std::string* forLabelGen();
 	static std::string* endforLabelGen();
-	static std::string* switchLabelGen(bool _case = false, bool _default = false, bool endswitch = false);
+	static std::string* switchLabelGen(bool _case = false, bool _default = false, bool endswitch = false, bool lastLabel = false);
 	static void output();
 	static void addPrintStrIr(std::string* str); // add 'printf(string)' IR
 	static void addPrintExpIr(int type, int num, std::string* str); // add 'printf(expression)' IR

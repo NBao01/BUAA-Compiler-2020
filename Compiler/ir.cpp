@@ -2,6 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <cassert>
+#include <stack>
 
 std::vector<IrItem*> IrList;
 
@@ -138,9 +139,12 @@ std::string* IrGenerator::endforLabelGen() {
 	return new std::string(prefix + suffix);
 }
 
-std::string* IrGenerator::switchLabelGen(bool _case, bool _default, bool endswitch) {
+std::string* IrGenerator::switchLabelGen(bool _case, bool _default, bool endswitch, bool lastLabel) {
+	static std::stack<int> ijStack;
+	static int level = 0;	// switch可能會嵌套，因此記錄當前嵌套層數，否則i、j可能會"一去不復返"
 	static int i = -1;
 	static int j = 0;
+	static int maxI = -1;	// 記錄曾經出現過的最大的i，確保生成的switch標簽不會重複
 
 	if (endswitch) {
 		std::string prefix = "Endswitch_";
@@ -148,6 +152,15 @@ std::string* IrGenerator::switchLabelGen(bool _case, bool _default, bool endswit
 		std::stringstream ss;
 		ss << i;
 		ss >> suffix;
+		if (lastLabel) {
+			level--;
+			if (level > 0) {	// 回復外層switch的i和j
+				j = ijStack.top();
+				ijStack.pop();
+				i = ijStack.top();
+				ijStack.pop();
+			}
+		}
 		return new std::string(prefix + suffix);
 	}
 	if (_default) {
@@ -166,11 +179,17 @@ std::string* IrGenerator::switchLabelGen(bool _case, bool _default, bool endswit
 		ss >> suffix;
 		return new std::string(prefix + suffix);
 	}
+	if (level > 0) {	//	当前是嵌套在switch中的switch语句
+		ijStack.push(i);
+		ijStack.push(j);
+	}
+	level++;
 	j = 0;
 	std::string prefix = "Switch_";
 	std::string suffix;
 	std::stringstream ss;
-	ss << ++i;
+	ss << ++maxI;
+	i = maxI;
 	ss >> suffix;
 	return new std::string(prefix + suffix);
 }
@@ -246,14 +265,15 @@ void IrGenerator::output() {
 		case IR_PUSH:
 			out << irInstructions[op] << " ";
 			if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
-				out << *(*it)->getLop() << std::endl;
+				out << *(*it)->getLop();
 			}
 			else if ((*it)->getLopType() == CHTYPE) {
-				out  << "'" << *(*it)->getLop() << "'" << std::endl;
+				out  << "'" << *(*it)->getLop() << "'";
 			}
 			else if ((*it)->getLopType() == INTTYPE) {
-				out  << (*it)->getLopInt() << std::endl;
+				out  << (*it)->getLopInt();
 			}
+			out << std::endl;
 			break;
 		case IR_CALL:
 			out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;

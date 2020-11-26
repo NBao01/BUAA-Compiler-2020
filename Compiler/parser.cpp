@@ -1504,6 +1504,7 @@ SymbolNode* Parser::_返回語句() {
 			// ERROR_GH JUDGER STAGE 2
 			TableTools::errorJudgerGH(2, VOID, word->getLine());
 			// ERROR_GH JUDGER STAGE 2 END
+			IrGenerator::addReturnIr(NOTYPE, 0, nullptr);
 		}
 	}
 	else error();
@@ -1580,7 +1581,7 @@ SymbolNode* Parser::_缺省(std::vector<IrItem*>* before) {
 
 	IrGenerator::addLabelIr(label_default);
 	node->addChild(_語句());
-	IrGenerator::addLabelIr(IrGenerator::switchLabelGen(true, true, true));
+	IrGenerator::addLabelIr(IrGenerator::switchLabelGen(true, true, true, true));
 	return node;
 }
 
@@ -1602,7 +1603,7 @@ SymbolNode* Parser::_情況子語句(int type, int num, std::string* str, std::v
 
 	before->push_back(new IrItem(IR_EQL, type, INTTYPE, num, con, str, nullptr, nullptr));
 	std::string* label_case = IrGenerator::switchLabelGen(true);	// case gen
-	before->push_back(new IrItem(IR_BZ, 0, 0, 0, 0, nullptr, nullptr, label_case));
+	before->push_back(new IrItem(IR_BNZ, 0, 0, 0, 0, nullptr, nullptr, label_case));
 
 	IrGenerator::addLabelIr(label_case);
 	node->addChild(_語句());
