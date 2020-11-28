@@ -300,6 +300,7 @@ void MipsGenerator::generate() {
 				addI(MIPS_LA, 0, $a0, 0, new std::string("endl"));
 				addI(MIPS_LI, 0, $v0, 4, nullptr);
 				addSyscall();
+				RegfileManager::setInvalid(rs);
 			}
 			else if (ir->getLopType() == TMPTYPE_CH) {
 				rs = RegfileManager::searchTemp(ir->getLop());
@@ -309,6 +310,7 @@ void MipsGenerator::generate() {
 				addI(MIPS_LA, 0, $a0, 0, new std::string("endl"));
 				addI(MIPS_LI, 0, $v0, 4, nullptr);
 				addSyscall();
+				RegfileManager::setInvalid(rs);
 			}
 			else if (ir->getLopType() == INTTYPE) {
 				addI(MIPS_LI, 0, $a0, ir->getLopInt(), nullptr);
@@ -369,6 +371,7 @@ void MipsGenerator::generate() {
 				else {*/
 					int rt = RegfileManager::searchTemp(ir->getLop());
 					addI(MIPS_ADDI, rt, r->getId(), 0, nullptr);
+					RegfileManager::setInvalid(rt);
 				//}
 			}
 
@@ -392,6 +395,14 @@ void MipsGenerator::generate() {
 			}
 
 			addR(ir->getOp(), rs, rt, r->getId());
+			if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH || 
+				ir->getLopType() == INTTYPE || ir->getLopType() == CHTYPE) {
+				RegfileManager::setInvalid(rs);
+			}
+			if (ir->getRopType() == TMPTYPE || ir->getRopType() == TMPTYPE_CH ||
+				ir->getRopType() == INTTYPE || ir->getRopType() == CHTYPE) {
+				RegfileManager::setInvalid(rt);
+			}
 			break;
 		case IR_RET:
 			RegfileManager::writeSBack();
@@ -413,6 +424,7 @@ void MipsGenerator::generate() {
 				else {*/
 					rs = RegfileManager::searchTemp(ir->getLop());
 					addI(MIPS_ADDI, rs, $v1, 0, nullptr);
+					RegfileManager::setInvalid(rs);
 				//}
 			}
 			addR(MIPS_JR, $ra, 0, 0);
@@ -445,6 +457,7 @@ void MipsGenerator::generate() {
 					else {*/
 						rs = RegfileManager::searchTemp(ir->getLop());
 						addI(MIPS_ADDI, rs, rt, 0, nullptr);
+						RegfileManager::setInvalid(rs);
 					//}
 				}
 			}
@@ -469,6 +482,7 @@ void MipsGenerator::generate() {
 					else {*/
 						rt = RegfileManager::searchTemp(ir->getLop());
 						addI(MIPS_SW, $sp, rt, 4 * arguments, nullptr);
+						RegfileManager::setInvalid(rt);
 					//}
 				}
 			}
@@ -506,6 +520,19 @@ void MipsGenerator::generate() {
 				RegfileManager::writeAllBack();
 			//}                             
 			addB(bInstrJudger((*(it - 1))->getOp(), ir->getOp()), rs, rt, ir->getRes());
+			if ((*(it + 1))->getOp() != IR_EQL                    || 
+				(*(it + 1))->getLopType() != (*(it - 1))->getLopType() ||
+				(*(it + 1))->getLopInt()  !=  (*(it - 1))->getLopInt() ||
+				*(*(it + 1))->getLop()    !=    *(*(it - 1))->getLop() ) {
+				if ((*(it - 1))->getLopType() == TMPTYPE || (*(it - 1))->getLopType() == TMPTYPE_CH ||
+					(*(it - 1))->getLopType() == INTTYPE || (*(it - 1))->getLopType() == CHTYPE) {
+					RegfileManager::setInvalid(rs);
+				}	//	To ensure not set invalid for switch key.
+			}
+			if ((*(it - 1))->getRopType() == TMPTYPE || (*(it - 1))->getRopType() == TMPTYPE_CH ||
+				(*(it - 1))->getRopType() == INTTYPE || (*(it - 1))->getRopType() == CHTYPE) {
+				RegfileManager::setInvalid(rt);
+			}
 			break;
 		case IR_GOTO:
 			//if (isJumpingBack(ir->getRes())) {
@@ -536,6 +563,12 @@ void MipsGenerator::generate() {
 				addR(MIPS_ADD, rs, $sp, rs);
 				addI(MIPS_LW, rs, r->getId(), 0, nullptr);
 			}
+			
+			RegfileManager::setInvalid(rs);
+			if (ir->getRopType() == TMPTYPE || ir->getRopType() == TMPTYPE_CH ||
+				ir->getRopType() == INTTYPE || ir->getRopType() == CHTYPE) {
+				RegfileManager::setInvalid(rt);
+			}
 			break;
 		case IR_ARRAYSET:
 			rs = getRegL0R1(ir, curScope, 0);
@@ -551,6 +584,16 @@ void MipsGenerator::generate() {
 				addI(MIPS_ADDI, r->getId(), r->getId(), ti->getOffset(), nullptr);
 				addR(MIPS_ADD, r->getId(), $sp, r->getId());
 				addI(MIPS_SW, r->getId(), rs, 0, nullptr);
+			}
+
+			RegfileManager::setInvalid(r->getId());
+			if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH ||
+				ir->getLopType() == INTTYPE || ir->getLopType() == CHTYPE) {
+				RegfileManager::setInvalid(rs);
+			}
+			if (ir->getRopType() == TMPTYPE || ir->getRopType() == TMPTYPE_CH ||
+				ir->getRopType() == INTTYPE || ir->getRopType() == CHTYPE) {
+				RegfileManager::setInvalid(rt);
 			}
 			break;
 		}

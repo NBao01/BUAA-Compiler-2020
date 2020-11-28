@@ -1490,7 +1490,7 @@ SymbolNode* Parser::_讀語句() {
 // ＜写语句＞ ::= printf '(' ＜字符串＞,＜表达式＞ ')'| printf '('＜字符串＞ ')'| printf '('＜表达式＞')' 
 SymbolNode* Parser::_寫語句() {
 	int type = NOTYPE, num = 0;
-	std::string* str = nullptr;
+	std::string* str = nullptr, * raw = nullptr;
 	SymbolNode* node = new SymbolNode(寫語句);
 	node->addChild(new SymbolNode(word));	// word->getType() is PRINTFTK
 	getsym();
@@ -1499,15 +1499,24 @@ SymbolNode* Parser::_寫語句() {
 	if (word->getType() == STRCON) {
 		std::string* str = nullptr;
 		node->addChild(_字符串(&str));
+
+		raw = new std::string();
+		for (int i = 0; i < str->size(); i++) {
+			if (str->at(i) == '\\') {
+				*raw += '\\';
+			}
+			*raw += str->at(i);
+		}
+
 		if (word->getType() == COMMA) {
-			IrGenerator::addPrintStrIr(str);
+			IrGenerator::addPrintStrIr(raw);
 			node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 			getsym();
 			node->addChild(_表達式(&type, &num, &str));
 			IrGenerator::addPrintExpIr(type, num, str);
 		}
 		else {
-			IrGenerator::addPrintStrIr(new std::string(*str + "\\n"));
+			IrGenerator::addPrintStrIr(new std::string(*raw + "\\n"));
 		} // If no expression after string, add \n.
 	}
 	else {

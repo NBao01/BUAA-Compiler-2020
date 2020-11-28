@@ -66,11 +66,11 @@ void RegfileManager::init() {
 }
 
 Reg* RegfileManager::getTempReg() {
-	static int i = 0;
+	/*static int i = 0;
 	Reg* reg = i <= 7 ? regfile[i + 8] : regfile[i + 16];
-	i++; if (i > 9) { i -= 10; } // i = (i + 1) % 10;
+	i++; if (i > 9) { i -= 10; } // i = (i + 1) % 10;*/
 
-	/*int regId = -1;
+	int regId = -1;
 	for (int i = 0; i < 10; i++) {
 		int j = i <= 7 ? i + 8 : i + 16;
 		if (!regfile[j]->isValid()) {
@@ -87,7 +87,7 @@ Reg* RegfileManager::getTempReg() {
 		// You can't use a valid temp reg, for the value in the reg will disappear!
 	}
 
-	Reg* reg = regfile[regId];*/
+	Reg* reg = regfile[regId];
 	if (reg->isValid() && !reg->isTemp()) {
 		// TODO: Write Back to Memory
 		TableItem* ti = TableTools::searchByLabel(reg->getLabel());
@@ -169,11 +169,12 @@ Reg* RegfileManager::mappingTemp(std::string* label) {
 	return reg;
 }
 
-// Reg for constant, No-Name-Reg, Use at once, so set valid as false directly.
+// Reg for constant, No-Name-Reg, Use at once.
 Reg* RegfileManager::mappingTemp() {
 	Reg* reg = RegfileManager::getTempReg();
 	reg->setLabel(nullptr);
-	reg->setValid(false);
+	reg->setValid(true);
+	reg->setTemp(true);
 	return reg;
 }
 
