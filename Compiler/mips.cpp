@@ -115,7 +115,7 @@ int MipsGenerator::getRegL0R1(IrItem* ir, int curScope, int lr) {
 			r = ti->getCache() == nullptr ? RegfileManager::mapping(ti, true) : ti->getCache();
 			regId = r->getId();
 		}
-		else if (ir->getLopType() == TMPTYPE) {
+		else if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH) {
 			//regId = (ir->getLop())->find("$RET") != std::string::npos ? $v1 : RegfileManager::searchTemp(ir->getLop());
 			regId = RegfileManager::searchTemp(ir->getLop());
 		}
@@ -135,7 +135,7 @@ int MipsGenerator::getRegL0R1(IrItem* ir, int curScope, int lr) {
 			r = ti->getCache() == nullptr ? RegfileManager::mapping(ti, true) : ti->getCache();
 			regId = r->getId();
 		}
-		else if (ir->getRopType() == TMPTYPE) {
+		else if (ir->getRopType() == TMPTYPE || ir->getRopType() == TMPTYPE_CH) {
 			//regId = (ir->getRop())->find("$RET") != std::string::npos ? $v1 : RegfileManager::searchTemp(ir->getRop());
 			regId = RegfileManager::searchTemp(ir->getRop());
 		}
@@ -301,6 +301,15 @@ void MipsGenerator::generate() {
 				addI(MIPS_LI, 0, $v0, 4, nullptr);
 				addSyscall();
 			}
+			else if (ir->getLopType() == TMPTYPE_CH) {
+				int rs = RegfileManager::searchTemp(ir->getLop());
+				addR(MIPS_ADD, rs, $zero, $a0);
+				addI(MIPS_LI, 0, $v0, 11, nullptr);
+				addSyscall();
+				addI(MIPS_LA, 0, $a0, 0, new std::string("endl"));
+				addI(MIPS_LI, 0, $v0, 4, nullptr);
+				addSyscall();
+			}
 			else if (ir->getLopType() == INTTYPE) {
 				addI(MIPS_LI, 0, $a0, ir->getLopInt(), nullptr);
 				addI(MIPS_LI, 0, $v0, 1, nullptr);
@@ -353,7 +362,7 @@ void MipsGenerator::generate() {
 				Reg* r2 = ti2->getCache() == nullptr ? RegfileManager::mapping(ti2, true) : ti2->getCache();
 				addI(MIPS_ADDI, r2->getId(), r->getId(), 0, nullptr);
 			}
-			else if (ir->getLopType() == TMPTYPE) {
+			else if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH) {
 				/*if ((ir->getLop())->find("$RET") != std::string::npos) {
 					addI(MIPS_ADDI, $v1, r->getId(), 0, nullptr);
 				}
@@ -396,7 +405,7 @@ void MipsGenerator::generate() {
 				r = ti->getCache() == nullptr ? RegfileManager::mapping(ti, true) : ti->getCache();
 				addI(MIPS_ADDI, r->getId(), $v1, 0, nullptr);
 			}
-			else if (ir->getLopType() == TMPTYPE) {
+			else if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH) {
 				/*if ((ir->getLop())->find("$RET") != std::string::npos) {		// "return func();" in a function 
 					// addI(MIPS_ADDI, $v1, $v1, 0, nullptr);
 				}
@@ -408,6 +417,7 @@ void MipsGenerator::generate() {
 			addR(MIPS_JR, $ra, 0, 0);
 			break;
 		case IR_PRECALL:
+			addI(MIPS_ADDI, $sp, $fp, 0, nullptr);
 			RegfileManager::saveEnv();
 			addI(MIPS_ADDI, $sp, $sp, -TableTools::getstackSpaceOfScope(ir->getLop()), nullptr);
 			arguments = 0;
@@ -423,10 +433,10 @@ void MipsGenerator::generate() {
 				}
 				else if (ir->getLopType() == IDTYPE) {
 					ti = TableTools::search(ir->getLop(), curScope);
-					r = ti->getCache() == nullptr ? RegfileManager::mapping(ti, true, $a0) : ti->getCache();
+					r = ti->getCache() == nullptr ? RegfileManager::mapping(ti, true, $a0, $fp) : ti->getCache();
 					addI(MIPS_ADDI, r->getId(), rt, 0, nullptr);
 				}
-				else if (ir->getLopType() == TMPTYPE) {
+				else if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH) {
 					/*if ((ir->getLop())->find("$RET") != std::string::npos) {
 						addI(MIPS_ADDI, $v1, rt, 0, nullptr);
 					}
@@ -447,10 +457,10 @@ void MipsGenerator::generate() {
 				}
 				else if (ir->getLopType() == IDTYPE) {
 					ti = TableTools::search(ir->getLop(), curScope);
-					r = ti->getCache() == nullptr ? RegfileManager::mapping(ti, true, $a0) : ti->getCache();
+					r = ti->getCache() == nullptr ? RegfileManager::mapping(ti, true, $a0, $fp) : ti->getCache();
 					addI(MIPS_SW, $sp, r->getId(), 4 * arguments, nullptr);
 				}
-				else if (ir->getLopType() == TMPTYPE) {
+				else if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH) {
 					/*if ((ir->getLop())->find("$RET") != std::string::npos) {
 						addI(MIPS_SW, $sp, $v1, 4 * arguments, nullptr);
 					}
@@ -514,14 +524,15 @@ void MipsGenerator::generate() {
 
 			ti = TableTools::search(ir->getLop(), curScope);
 			rt = getRegL0R1(ir, curScope, 1);
-			addI(MIPS_SLL, rt, rt, 2, nullptr);	// Actually, sll is a R-type Instruction
+			rs = RegfileManager::mappingTemp()->getId();
+			addI(MIPS_SLL, rt, rs, 2, nullptr);	// Actually, sll is a R-type Instruction
 			if (ti->getScope() == 0) {
-				addI(MIPS_LW, rt, r->getId(), 0, ti->getLabel());
+				addI(MIPS_LW, rs, r->getId(), 0, ti->getLabel());
 			}
 			else {
-				addI(MIPS_ADDI, rt, rt, ti->getOffset(), nullptr);
-				addR(MIPS_ADD, rt, $sp, rt);
-				addI(MIPS_LW, rt, r->getId(), 0, nullptr);
+				addI(MIPS_ADDI, rs, rs, ti->getOffset(), nullptr);
+				addR(MIPS_ADD, rs, $sp, rs);
+				addI(MIPS_LW, rs, r->getId(), 0, nullptr);
 			}
 			break;
 		case IR_ARRAYSET:
@@ -529,14 +540,15 @@ void MipsGenerator::generate() {
 
 			ti = TableTools::search(ir->getRes(), curScope);
 			rt = getRegL0R1(ir, curScope, 1);
-			addI(MIPS_SLL, rt, rt, 2, nullptr);	// Actually, sll is a R-type Instruction
+			r = RegfileManager::mappingTemp();
+			addI(MIPS_SLL, rt, r->getId(), 2, nullptr);	// Actually, sll is a R-type Instruction
 			if (ti->getScope() == 0) {
-				addI(MIPS_SW, rt, rs, 0, ti->getLabel());
+				addI(MIPS_SW, r->getId(), rs, 0, ti->getLabel());
 			}
 			else {
-				addI(MIPS_ADDI, rt, rt, ti->getOffset(), nullptr);
-				addR(MIPS_ADD, rt, $sp, rt);
-				addI(MIPS_SW, rt, rs, 0, nullptr);
+				addI(MIPS_ADDI, r->getId(), r->getId(), ti->getOffset(), nullptr);
+				addR(MIPS_ADD, r->getId(), $sp, r->getId());
+				addI(MIPS_SW, r->getId(), rs, 0, nullptr);
 			}
 			break;
 		}
@@ -635,7 +647,7 @@ void MipsGenerator::output() {
 		case MIPS_SLL:
 			out << "\t" << mipsInstructions[(*textIt)->getInstr()] << " "
 				<< regstr[(*textIt)->getRt()] << ", "
-				<< regstr[(*textIt)->getRt()] << ", "
+				<< regstr[(*textIt)->getRs()] << ", "
 				<< (*textIt)->getImmediate() << std::endl;
 		}
 	}

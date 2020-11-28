@@ -12,6 +12,7 @@
 #define CHTYPE		3	// char type, lop/rop is the char
 #define STRTYPE		4	// string type, lop/rop is the string
 #define TMPTYPE		5	// temp type, lop/rop is the temp identifier
+#define TMPTYPE_CH	6	// temp type, but for char.
 
 class IrItem {
 private:
@@ -42,7 +43,7 @@ extern std::vector<IrItem*> IrList;
 
 class IrGenerator {
 private:
-	static std::string* tempIdentifierGen(bool rollback = 0);
+	static std::string* tempIdentifierGen(bool rollback = false);
 public:
 	static std::string* ifLabelGen();
 	static std::string* endifLabelGen();
@@ -63,7 +64,7 @@ public:
 	static void addReturnIr(int type, int num, std::string* lop);
 	static void addPrecallIr(int type, std::string* lop);
 	static void addCallIr(int type, std::string* lop);
-	static void addPushIr(int type, int num, std::string* lop);
+	static void addPushIr(int type, int num, std::string* lop, std::string* funcName);
 	static void addComparisonIr(
 		int op, int lopType, int ropType, int lopInt, int ropInt,std::string* lop, std::string* rop);
 	static void addLabelIr(std::string* label);

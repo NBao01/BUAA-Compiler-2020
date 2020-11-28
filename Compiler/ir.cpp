@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cassert>
 #include <stack>
+#include "table.h"
 
 std::vector<IrItem*> IrList;
 
@@ -206,7 +207,7 @@ void IrGenerator::output() {
 			if ((*it)->getLopType() == STRTYPE) {
 				out << "\"" << *(*it)->getLop() << "\"" << std::endl;
 			}
-			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
+			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE || (*it)->getLopType() == TMPTYPE_CH) {
 				out << *(*it)->getLop() << std::endl;
 			}
 			else if ((*it)->getLopType() == INTTYPE) {
@@ -227,7 +228,7 @@ void IrGenerator::output() {
 			else if ((*it)->getLopType() == CHTYPE) {
 				out << "'" << *(*it)->getLop() << "'";
 			}
-			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
+			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE || (*it)->getLopType() == TMPTYPE_CH) {
 				out << *(*it)->getLop();
 			}
 			out << " " << *(*it)->getRes() << std::endl;
@@ -243,7 +244,7 @@ void IrGenerator::output() {
 			else if ((*it)->getLopType() == CHTYPE) {
 				out << "'" << *(*it)->getLop() << "'";
 			}
-			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
+			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE || (*it)->getLopType() == TMPTYPE_CH) {
 				out << *(*it)->getLop();
 			}
 			out << " ";
@@ -253,7 +254,7 @@ void IrGenerator::output() {
 			else if ((*it)->getRopType() == CHTYPE) {
 				out << "'" << *(*it)->getRop() << "'";
 			}
-			else if ((*it)->getRopType() == IDTYPE || (*it)->getRopType() == TMPTYPE) {
+			else if ((*it)->getRopType() == IDTYPE || (*it)->getRopType() == TMPTYPE || (*it)->getRopType() == TMPTYPE_CH) {
 				out << *(*it)->getRop();
 			}
 			out << " " << *(*it)->getRes() << std::endl;
@@ -265,7 +266,7 @@ void IrGenerator::output() {
 		case IR_RET:
 		case IR_PUSH:
 			out << irInstructions[op] << " ";
-			if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
+			if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE || (*it)->getLopType() == TMPTYPE_CH) {
 				out << *(*it)->getLop();
 			}
 			else if ((*it)->getLopType() == CHTYPE) {
@@ -287,7 +288,7 @@ void IrGenerator::output() {
 			if ((*it)->getRopType() == INTTYPE) {
 				out << (*it)->getRopInt();
 			}
-			else if ((*it)->getRopType() == IDTYPE || (*it)->getRopType() == TMPTYPE) {
+			else if ((*it)->getRopType() == IDTYPE || (*it)->getRopType() == TMPTYPE || (*it)->getRopType() == TMPTYPE_CH) {
 				out << *(*it)->getRop();
 			}
 			out << "] " << *(*it)->getRes() << std::endl;
@@ -300,7 +301,7 @@ void IrGenerator::output() {
 			else if ((*it)->getLopType() == CHTYPE) {
 				out << "'" << *(*it)->getLop() << "'";
 			}
-			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
+			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE || (*it)->getLopType() == TMPTYPE_CH) {
 				out << *(*it)->getLop();
 			}
 			out << " " << *(*it)->getRes() << "[";
@@ -308,7 +309,7 @@ void IrGenerator::output() {
 			if ((*it)->getRopType() == INTTYPE) {
 				out << (*it)->getRopInt();
 			}
-			else if ((*it)->getRopType() == IDTYPE || (*it)->getRopType() == TMPTYPE) {
+			else if ((*it)->getRopType() == IDTYPE || (*it)->getRopType() == TMPTYPE || (*it)->getRopType() == TMPTYPE_CH) {
 				out << *(*it)->getRop();
 			}
 			out << "]" << std::endl;
@@ -326,7 +327,7 @@ void IrGenerator::output() {
 			else if ((*it)->getLopType() == CHTYPE) {
 				out << "'" << *(*it)->getLop() << "'";
 			}
-			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE) {
+			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE || (*it)->getLopType() == TMPTYPE_CH) {
 				out << *(*it)->getLop();
 			}
 			out << " ";
@@ -336,7 +337,7 @@ void IrGenerator::output() {
 			else if ((*it)->getRopType() == CHTYPE) {
 				out << "'" << *(*it)->getRop() << "'";
 			}
-			else if ((*it)->getRopType() == IDTYPE || (*it)->getRopType() == TMPTYPE) {
+			else if ((*it)->getRopType() == IDTYPE || (*it)->getRopType() == TMPTYPE || (*it)->getRopType() == TMPTYPE_CH) {
 				out << *(*it)->getRop();
 			}
 			out << std::endl;
@@ -368,7 +369,7 @@ void IrGenerator::addScanIr(std::string* str) {
 
 void IrGenerator::addAssignIr(std::string* res, int lopType, int lopInt, std::string* lop) {
 	// If R-value of Assign statement is a expression, we don't need an assign ir, instead of modify last ir's res.
-	if (lopType == TMPTYPE && lop->find("$RET") == std::string::npos) {
+	if ((lopType == TMPTYPE || lopType == TMPTYPE_CH) && lop->find("$RET") == std::string::npos) {
 		IrItem* lastIr = IrList.back();
 		assert(*lastIr->getRes() == *lop);
 		lastIr->setRes(res);
@@ -381,7 +382,8 @@ void IrGenerator::addAssignIr(std::string* res, int lopType, int lopInt, std::st
 
 std::string* IrGenerator::addNormalIr(int op, int lopType, int ropType, int lopInt, int ropInt,
 	std::string* lop, std::string* rop, std::string* res) {
-	std::string* ret = res ? res : tempIdentifierGen();
+	std::string* ret = nullptr;
+	ret = res ? res : tempIdentifierGen();
 	IrList.push_back(new IrItem(op, lopType, ropType, lopInt, ropInt, lop, rop, ret));
 	return ret;
 }
@@ -405,8 +407,8 @@ void IrGenerator::addCallIr(int type, std::string* lop) {
 	IrList.push_back(new IrItem(IR_CALL, type, NOTYPE, 0, 0, lop, nullptr, nullptr));
 }
 
-void IrGenerator::addPushIr(int type, int num, std::string* lop) {
-	IrList.push_back(new IrItem(IR_PUSH, type, NOTYPE, num, 0, lop, nullptr, nullptr));
+void IrGenerator::addPushIr(int type, int num, std::string* lop, std::string* funcName) {
+	IrList.push_back(new IrItem(IR_PUSH, type, NOTYPE, num, 0, lop, nullptr, funcName));
 }
 
 void IrGenerator::addComparisonIr(

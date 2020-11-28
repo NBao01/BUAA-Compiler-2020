@@ -3,6 +3,7 @@
 
 #include <string>
 #include "table.h"
+#include "mipsDefinitions.h"
 
 class Reg {
 private:
@@ -32,7 +33,7 @@ private:
 	static Reg* getSavedReg();
 public:
 	static void init();
-	static Reg* mapping(TableItem* ti, bool load = false, int specificReg = 0);
+	static Reg* mapping(TableItem* ti, bool load = false, int specificReg = 0, int sp = $sp);
 	static Reg* mappingTemp(std::string* label);
 	static Reg* mappingTemp();
 	static int searchTemp(std::string* label);

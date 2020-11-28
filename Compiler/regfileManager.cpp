@@ -109,8 +109,9 @@ Reg* RegfileManager::getSavedReg() {
  * load = true  : load the value to register immediately, intent to read.
  * load = false : no loading, intent to write.
  * specificReg is not 0 : specify a certain register to the tableItem, useful for condition such as printf
+ * sp is the base register, is $sp mostly, is $fp when in precall
  */
-Reg* RegfileManager::mapping(TableItem* ti, bool load, int specificReg) {
+Reg* RegfileManager::mapping(TableItem* ti, bool load, int specificReg, int sp) {
 	Reg* reg = nullptr;
 	if (ti->getScope() == 0) {
 		reg = specificReg == 0 ? RegfileManager::getSavedReg() : regfile[specificReg];
@@ -121,7 +122,7 @@ Reg* RegfileManager::mapping(TableItem* ti, bool load, int specificReg) {
 	else {
 		reg = specificReg == 0 ? RegfileManager::getTempReg() : regfile[specificReg];
 		if (load) {
-			MipsGenerator::addI(MIPS_LW, $sp, reg->getId(), ti->getOffset(), nullptr);
+			MipsGenerator::addI(MIPS_LW, sp, reg->getId(), ti->getOffset(), nullptr);
 		}
 	}
 

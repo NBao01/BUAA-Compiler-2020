@@ -1231,7 +1231,12 @@ SymbolNode* Parser::_因子(int* type, int* num, std::string** str) {
 			node->addChild((nodeForErrorI = _表達式(&type2, &num2, &str2)));
 			if (ti->getDimension() == 1) {
 				*str = IrGenerator::addNormalIr(IR_ARRAYGET, *type, type2, 0, num2, *str, str2);
-				*type = TMPTYPE;
+				if (ti->getRetType() == CHAR) {
+					*type = TMPTYPE_CH;
+				}
+				else {
+					*type = TMPTYPE;
+				}
 				*num = 0;
 			}
 			else {
@@ -1263,7 +1268,12 @@ SymbolNode* Parser::_因子(int* type, int* num, std::string** str) {
 				type2 = TMPTYPE;
 				num2 = 0;
 				*str = IrGenerator::addNormalIr(IR_ARRAYGET, *type, type2, 0, num2, *str, str2);
-				*type = TMPTYPE;
+				if (ti->getRetType() == CHAR) {
+					*type = TMPTYPE_CH;
+				}
+				else {
+					*type = TMPTYPE;
+				}
 				*num = 0;
 				if (TableTools::isCharType(nodeForErrorI)) {
 					ErrorHandler::addErrorItem(ERROR_I, line);
@@ -1304,7 +1314,13 @@ SymbolNode* Parser::_因子(int* type, int* num, std::string** str) {
 		node->addChild(_字符(str));
 	}
 	else if (word->getType() == IDENFR) {
-		*type = TMPTYPE;
+		TableItem* ti = TableTools::search(&word->getWord(), 0);
+		if (ti->getRetType() == CHAR) {
+			*type = TMPTYPE_CH;
+		}
+		else {
+			*type = TMPTYPE;
+		}
 		node->addChild(_有返回值函數調用語句());
 		static int i = 0;
 		std::string strI;
@@ -1344,7 +1360,7 @@ SymbolNode* Parser::_有返回值函數調用語句() {
 
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
-	node->addChild((nodeForErrorDE = _值參數表()));		//node->addChild(_值參數表());
+	node->addChild((nodeForErrorDE = _值參數表(str)));		//node->addChild(_值參數表());
 	if (word->getType() == RPARENT) {
 		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 		getsym();
@@ -1368,17 +1384,17 @@ SymbolNode* Parser::_有返回值函數調用語句() {
 }
 
 // ＜值参数表＞ ::= ＜表达式＞{,＜表达式＞}｜＜空＞
-SymbolNode* Parser::_值參數表() {
+SymbolNode* Parser::_值參數表(std::string* funcName) {
 	SymbolNode* node = new SymbolNode(值參數表);
 	int type = 0, num = 0;	std::string* str = nullptr;
 	if (word->getType() != RPARENT && word->getType() != SEMICN) {
 		node->addChild(_表達式(&type, &num, &str));
-		IrGenerator::addPushIr(type, num, str);
+		IrGenerator::addPushIr(type, num, str, funcName);
 		while (word->getType() == COMMA) {
 			node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 			getsym();
 			node->addChild(_表達式(&type, &num, &str));
-			IrGenerator::addPushIr(type, num, str);
+			IrGenerator::addPushIr(type, num, str, funcName);
 		}
 	}
 	return node;
@@ -1724,7 +1740,7 @@ SymbolNode* Parser::_無返回值函數調用語句() {
 
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
-	node->addChild((nodeForErrorDE = _值參數表()));		//node->addChild(_值參數表());
+	node->addChild((nodeForErrorDE = _值參數表(str)));		//node->addChild(_值參數表());
 	if (word->getType() == RPARENT) {
 		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 		getsym();

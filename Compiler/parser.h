@@ -51,7 +51,7 @@ public:
 	static SymbolNode* _因子(int* type, int* num, std::string** str);
 	static SymbolNode* _乘法運算符();
 	static SymbolNode* _有返回值函數調用語句();
-	static SymbolNode* _值參數表();
+	static SymbolNode* _值參數表(std::string* funcName);
 	static SymbolNode* _讀語句();
 	static SymbolNode* _寫語句();
 	static SymbolNode* _字符串(std::string** str);
