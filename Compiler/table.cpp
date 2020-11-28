@@ -23,15 +23,17 @@ TableItem::TableItem(std::string* name, int type, int retType, int scope) {
 	this->retType = retType;
 	this->scope = scope;
 	// These below will be set by setter
-	dimension = 0;
-	dims[0] = 0;
-	dims[1] = 0;
-	paramNum = 0;
-	paramsRetType = nullptr;
+	this->dimension = 0;
+	this->dims[0] = 0;
+	this->dims[1] = 0;
+	this->paramNum = 0;
+	this->paramsRetType = nullptr;
 	this->label = nullptr;
 	this->offset = 0;
+	this->hasInitialValue = false;
 	this->initialValue = 0;
 	this->initialValues = nullptr;
+	this->scopeInside = 0;
 	this->cache = 0;
 }
 
@@ -39,7 +41,7 @@ TableItem* TableItem::newConstTableItem(std::string* name, int type, int retType
 	assert(type == CONST && retType != VOID);
 	TableItem* ti = new TableItem(name, type, retType, scope_i);
 
-	// Make Label for Global Const
+	// Make And Set Label for Global Const
 	if (scope_i == 0) {
 		std::string* label = new std::string();
 		if (retType == INT) {
@@ -48,21 +50,40 @@ TableItem* TableItem::newConstTableItem(std::string* name, int type, int retType
 		else if (retType == CHAR) {
 			*label += "global_const_char_";
 		}
-		*label += *name;
+		for (int i = 0; i < name->size(); i++) {
+			*label += tolower(name->at(i));
+		}
 		ti->setLabel(label);
 	}
+	// Make And Set Label and Offset for Local Const
 	else {
+		std::string* label = new std::string();
+		std::stringstream ss;	std::string scope_i_str;
+		ss << scope_i;			ss >> scope_i_str;
+		*label += "scope_" + scope_i_str + "_const_";
+		if (retType == INT) {
+			*label += "int_";
+		}
+		else if (retType == CHAR) {
+			*label += "char_";
+		}
+		for (int i = 0; i < name->size(); i++) {
+			*label += tolower(name->at(i));
+		}
+		ti->setLabel(label);
+
 		ti->setOffset(offset_i);
 		offset_i += 4;
 	}
 
+	ti->setHasInitialValue(true);
 	ti->setInitialValue(initialValue);
 
 	return ti;
 }
 
 TableItem* TableItem::newVarTableItem(std::string* name, int type, int retType, 
-	int dimension, int dim0, int dim1, int initialValue, std::vector<int>* initialValues) {
+	int dimension, int dim0, int dim1, bool hasInitialValue, int initialValue, std::vector<int>* initialValues) {
 	assert(type == VAR && retType != VOID);
 	TableItem* ti = new TableItem(name, type, retType, scope_i);
 
@@ -77,10 +98,28 @@ TableItem* TableItem::newVarTableItem(std::string* name, int type, int retType,
 		else if (retType == CHAR) {
 			*label += "global_var_char_";
 		}
-		*label += *name;
+		for (int i = 0; i < name->size(); i++) {
+			*label += tolower(name->at(i));
+		}
 		ti->setLabel(label);
 	}
+	// Make And Set Label and Offset for Local Var
 	else {
+		std::string* label = new std::string();
+		std::stringstream ss;	std::string scope_i_str;
+		ss << scope_i;			ss >> scope_i_str;
+		*label += "scope_" + scope_i_str + "_var_";
+		if (retType == INT) {
+			*label += "int_";
+		}
+		else if (retType == CHAR) {
+			*label += "char_";
+		}
+		for (int i = 0; i < name->size(); i++) {
+			*label += tolower(name->at(i));
+		}
+		ti->setLabel(label);
+
 		ti->setOffset(offset_i);
 		if (dimension == 0) {
 			offset_i += 4;
@@ -93,6 +132,7 @@ TableItem* TableItem::newVarTableItem(std::string* name, int type, int retType,
 		}
 	}
 
+	ti->setHasInitialValue(hasInitialValue);
 	ti->setInitialValue (initialValue );
 	ti->setInitialValues(initialValues);
 
@@ -103,8 +143,16 @@ TableItem* TableItem::newFuncTableItem(std::string* name, int type, int retType)
 	assert(type == FUNC);
 	TableItem* ti = new TableItem(name, type, retType, 0); // The Function Definition has scope 0
 	//ti->setParams(paramNum, params);
+
+	std::string* label = new std::string("Func_");
+	for (int i = 0; i < name->size(); i++) {
+		*label += tolower(name->at(i));
+	}
+	ti->setLabel(label);
+
 	TableTools::setStackSpaceOfScope(offset_i);	// set stack space for each scope.
 	scope_i++;
+	ti->setScopeInside(scope_i);
 	offset_i = 0;
 	return ti;
 }
@@ -112,6 +160,22 @@ TableItem* TableItem::newFuncTableItem(std::string* name, int type, int retType)
 TableItem* TableItem::newParamTableItem(std::string* name, int type, int retType) {
 	assert(type == PARAM);
 	TableItem * ti = new TableItem(name, type, retType, scope_i);
+
+	std::string* label = new std::string();
+	std::stringstream ss;	std::string scope_i_str;
+	ss << scope_i;			ss >> scope_i_str;
+	*label += "scope_" + scope_i_str + "_param_";
+	if (retType == INT) {
+		*label += "int_";
+	}
+	else if (retType == CHAR) {
+		*label += "char_";
+	}
+	for (int i = 0; i < name->size(); i++) {
+		*label += tolower(name->at(i));
+	}
+	ti->setLabel(label);
+
 	ti->setOffset(offset_i);
 	offset_i += 4;	// offset of params by stack pointer
 	return ti;
@@ -136,6 +200,10 @@ void TableItem::setOffset(int offset) {
 	this->offset = offset;
 }
 
+void TableItem::setHasInitialValue(bool hasInitialValue) {
+	this->hasInitialValue = hasInitialValue;
+}
+
 void TableItem::setInitialValue(int initialValue) {
 	this->initialValue = initialValue;
 }
@@ -144,7 +212,11 @@ void TableItem::setInitialValues(std::vector<int>* initialValues) {
 	this->initialValues = initialValues;
 }
 
-void TableItem::setCache(int reg) {
+void TableItem::setScopeInside(int scopeInside) {
+	this->scopeInside = scopeInside;
+}
+
+void TableItem::setCache(Reg* reg) {
 	this->cache = reg;
 }
 
@@ -207,6 +279,10 @@ int TableItem::getOffset() {
 	return offset;
 }
 
+bool TableItem::getHasInitialValue() {
+	return hasInitialValue;
+}
+
 int TableItem::getInitialValue() {
 	return initialValue;
 }
@@ -215,7 +291,11 @@ std::vector<int>* TableItem::getInitialValues() {
 	return initialValues;
 }
 
-int TableItem::getCache() {
+int TableItem::getScopeInside() {
+	return scopeInside;
+}
+
+Reg* TableItem::getCache() {
 	return cache;
 }
 
@@ -225,6 +305,15 @@ void TableTools::setStackSpaceOfScope(int space) {
 
 int TableTools::getstackSpaceOfScope(int scope) {
 	return stackSpace.at(scope);
+}
+
+int TableTools::getstackSpaceOfScope(std::string* funcName) {
+	for (int i = table.size() - 1; i >= 0; i--) {
+		if (table[i]->isSameName(funcName)) {
+			return stackSpace.at(table[i]->getScopeInside());
+		}
+	}
+	return 0;
 }
 
 // parse initial value for consts and vars. return ascii if charcon, return intVal if intcon, plus, minus.
@@ -291,6 +380,7 @@ void TableTools::addVars(int it) {
 	type = VAR;
 	int dimension = 0;
 	int dim0 = 1, dim1 = 1;	// Initialize to 1, so that 'dim0 * dim1 = num_of_array' no matter what the dimension is.
+	bool hasInitialValue = false;
 	int initialValue = 0;
 	std::vector<int>* initialValues = nullptr;
 	for (int i = it_prev; i < it; i++) {
@@ -331,6 +421,7 @@ void TableTools::addVars(int it) {
 		}
 
 		if (wordlist[i]->getType() == ASSIGN) {
+			hasInitialValue = true;
 			i++;
 			if (wordlist[i]->getType() == LBRACE) {
 				// Array Variable
@@ -360,8 +451,9 @@ void TableTools::addVars(int it) {
 		}
 
 		if (wordlist[i]->getType() == COMMA || wordlist[i]->getType() == SEMICN) {
-			table.push_back(TableItem::newVarTableItem(name, type, retType, dimension, dim0, dim1, initialValue, initialValues));
+			table.push_back(TableItem::newVarTableItem(name, type, retType, dimension, dim0, dim1, hasInitialValue, initialValue, initialValues));
 			dimension = 0; dim0 = 1; dim1 = 1;
+			hasInitialValue = false;
 			initialValue = 0;
 			initialValues = nullptr;
 		}
@@ -661,9 +753,9 @@ bool TableTools::errorJudgerO(SymbolNode* node, int stage) {
 	return false;
 }
 
-TableItem* TableTools::search(std::string* name) {
+TableItem* TableTools::search(std::string* name, int scope) {
 	for (int i = table.size() - 1; i >= 0; i--) {
-		if ((table[i]->isSameScope(TableItem::scope_i) || table[i]->isSameScope(0)) &&
+		if ((table[i]->isSameScope(scope) || table[i]->isSameScope(0)) &&
 			table[i]->isSameName(name)) {
 			return table[i];
 		}
@@ -671,38 +763,17 @@ TableItem* TableTools::search(std::string* name) {
 	return nullptr;
 }
 
-void TableTools::search(std::string* str, int* type, std::string** label) {
+TableItem* TableTools::searchByLabel(std::string* label) {
 	for (int i = table.size() - 1; i >= 0; i--) {
-		if ((table[i]->isSameScope(TableItem::scope_i) || table[i]->isSameScope(0)) &&
-			table[i]->isSameName(str)) {
-			*type = table[i]->getRetType();
-			if (table[i]->getScope() == 0) {
-				*label = new std::string("global_");
-			}
-			else {
-				std::stringstream ss;
-				std::string scope_num;
-				ss << table[i]->getScope();
-				ss >> scope_num;
-				*label = new std::string("scope_" + scope_num + "_");
-			}
-
-			if (table[i]->getType() == CONST) {
-				**label += "const_";
-			}
-			else if (table[i]->getType() == VAR) {
-				**label += "var_";
-			}
-
-			if (table[i]->getRetType() == INT) {
-				**label += "int_";
-			}
-			else if (table[i]->getRetType() == CHAR) {
-				**label += "char_";
-			}
-
-			**label += *str;
-			return;
+		if (table[i]->getLabel() && *table[i]->getLabel() == *label) {
+			return table[i];
 		}
+	}
+	return nullptr;
+}
+
+void TableTools::cacheFlush() {
+	for (int i = 0; i < table.size(); i++) {
+		table[i]->setCache(0);
 	}
 }

@@ -26,6 +26,7 @@
 #define IR_LABEL	21
 #define IR_ARRAYGET 22
 #define IR_ARRAYSET 23
+#define IR_PRECALL	24
 
 extern const std::string irInstructions[];
 

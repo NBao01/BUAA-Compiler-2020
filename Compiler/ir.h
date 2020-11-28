@@ -61,6 +61,7 @@ public:
 		std::string* lop, std::string* rop, std::string* res = nullptr);
 	static void addFuncDefIr(int type, std::string* lop);
 	static void addReturnIr(int type, int num, std::string* lop);
+	static void addPrecallIr(int type, std::string* lop);
 	static void addCallIr(int type, std::string* lop);
 	static void addPushIr(int type, int num, std::string* lop);
 	static void addComparisonIr(
@@ -70,6 +71,7 @@ public:
 	static void addBzIr(std::string* label);	// ²»Âú×ãÌõ¼þ
 	static void addGotoIr(std::string* label);
 	static void addToLastSwitch(std::vector<IrItem*>* before, std::string* label_switch);
+	static IrItem* lastIr();
 };
 
 #endif // !__IR_H__

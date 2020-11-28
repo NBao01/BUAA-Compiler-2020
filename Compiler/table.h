@@ -5,6 +5,8 @@
 #include <vector>
 #include "abstractSyntaxTree.h"
 
+class Reg;
+
 // definition for type
 #define CONST	0
 #define VAR		1
@@ -28,16 +30,18 @@ private:
 	std::vector<int>* paramsRetType;
 	std::string* label;
 	int offset;
+	bool hasInitialValue;
 	int initialValue;
 	std::vector<int>* initialValues;
-	int cache;
+	int scopeInside;	// For function, store their inside scope
+	Reg* cache;
 public:
 	static int scope_i;
 	static int offset_i;
 	TableItem(std::string* name, int type, int retType, int scope);
 	static TableItem* newConstTableItem(std::string* name, int type, int retType, int initialValue);
 	static TableItem* newVarTableItem(std::string* name, int type, int retType,
-		int dimension,int dim0, int dim1, int initialValue, std::vector<int>* initialValues);
+		int dimension,int dim0, int dim1, bool hasInitialValue, int initialValue, std::vector<int>* initialValues);
 	static TableItem* newFuncTableItem(std::string* name, int type, int retType);
 	static TableItem* newParamTableItem(std::string* name, int type, int retType);
 	bool isSameScope(int curScope);
@@ -54,17 +58,21 @@ public:
 	std::vector<int>* getParamsRetType();
 	std::string* getLabel();
 	int getOffset();
+	bool getHasInitialValue();
 	int getInitialValue();
 	std::vector<int>* getInitialValues();
-	int getCache();
+	int getScopeInside();
+	Reg* getCache();
 	// Setters
 	void setDimension(int dimension, int dim0, int dim1);
 	void setParams(int paramNum, std::vector<int>* paramsRetType);
 	void setLabel(std::string* label);
 	void setOffset(int offset);
+	void setHasInitialValue(bool hasInitialValue);
 	void setInitialValue(int initialValue);
 	void setInitialValues(std::vector<int>* initialValues);
-	void setCache(int reg);
+	void setScopeInside(int scopeInside);
+	void setCache(Reg* reg);
 };
 
 extern std::vector<TableItem*> table;
@@ -80,6 +88,7 @@ public:
 	// Stack Tools
 	static void setStackSpaceOfScope(int space);
 	static int getstackSpaceOfScope(int scope);
+	static int getstackSpaceOfScope(std::string* funcName);
 	// Table Construct Tools
 	static void addConsts(int it);
 	static void addVars(int it);
@@ -94,8 +103,10 @@ public:
 	static bool errorJudgerGH(int stage, int key, int line = 0);
 	static bool errorJudgerJ(Word* word);
 	static bool errorJudgerO(SymbolNode* node, int stage);
-	static void search(std::string* str, int* type, std::string** label);
-	static TableItem* search(std::string* name);
+	static TableItem* search(std::string* name, int scope);
+	static TableItem* searchByLabel(std::string* label);
+	// Cache Tool
+	static void cacheFlush();
 };
 
 #endif // !__TABLE_H__

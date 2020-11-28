@@ -619,6 +619,10 @@ SymbolNode* Parser::_有返回值函數定義() {
 	TableTools::errorJudgerGH(3, 0, word->getLine());
 	// ERROR_GH JUDGER STAGE 3 END
 
+	if (IrGenerator::lastIr()->getOp() != IR_RET) {
+		IrGenerator::addReturnIr(NOTYPE, 0, nullptr);
+	}
+
 	node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
 	getsym();
 	return node;
@@ -654,6 +658,11 @@ SymbolNode* Parser::_無返回值函數定義() {
 	getsym();
 	TableTools::addFunc(it - 1);
 	node->addChild(_複合語句());
+
+	if (IrGenerator::lastIr()->getOp() != IR_RET) {
+		IrGenerator::addReturnIr(NOTYPE, 0, nullptr);
+	}
+
 	node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
 	getsym();
 	return node;
@@ -814,7 +823,6 @@ SymbolNode* Parser::_循環語句() {
 
 		std::string* label_while = IrGenerator::whileLabelGen();
 		std::string* label_endwhile = IrGenerator::endwhileLabelGen();
-		IrGenerator::addLabelIr(label_while);
 
 		node->addChild(new SymbolNode(word));
 		getsym();
@@ -822,7 +830,9 @@ SymbolNode* Parser::_循環語句() {
 		getsym();
 		node->addChild(_條件());
 
+		IrItem* cmpIr = IrGenerator::lastIr();
 		IrGenerator::addBzIr(label_endwhile);
+		IrGenerator::addLabelIr(label_while);
 
 		if (word->getType() == RPARENT) {
 			node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
@@ -835,7 +845,8 @@ SymbolNode* Parser::_循環語句() {
 		}
 		node->addChild(_語句());
 
-		IrGenerator::addGotoIr(label_while);
+		IrList.push_back(cmpIr);
+		IrGenerator::addBnzIr(label_while);
 		IrGenerator::addLabelIr(label_endwhile);
 	}
 	else if (word->getType() == FORTK) {
@@ -1209,7 +1220,7 @@ SymbolNode* Parser::_因子(int* type, int* num, std::string** str) {
 		// ERROR_C JUDGER END
 
 		node->addChild(_標識符(type, str));
-		TableItem* ti = TableTools::search(*str);
+		TableItem* ti = TableTools::search(*str, TableItem::scope_i);
 		int type2 = 0, num2 = 0;	std::string* str2 = nullptr;
 		int line; SymbolNode* nodeForErrorI;
 		if (word->getType() == LBRACK) {
@@ -1295,7 +1306,12 @@ SymbolNode* Parser::_因子(int* type, int* num, std::string** str) {
 	else if (word->getType() == IDENFR) {
 		*type = TMPTYPE;
 		node->addChild(_有返回值函數調用語句());
-		*str = new std::string("$RET");
+		static int i = 0;
+		std::string strI;
+		*str = new std::string("$RET_");
+		std::stringstream ss;
+		ss << i++;	ss >> strI;
+		**str += strI;
 	}
 	return node;
 }
@@ -1323,6 +1339,9 @@ SymbolNode* Parser::_有返回值函數調用語句() {
 	// ERROR_C JUDGER END
 
 	node->addChild(_標識符(&type, &str));
+
+	IrGenerator::addPrecallIr(type, str);
+
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild((nodeForErrorDE = _值參數表()));		//node->addChild(_值參數表());
@@ -1630,7 +1649,7 @@ SymbolNode* Parser::_賦值語句() {
 	// ERROR_J JUDGER END
 
 	res = &word->getWord();
-	TableItem* ti = TableTools::search(res);
+	TableItem* ti = TableTools::search(res, TableItem::scope_i);
 	int type2 = 0, num2 = 0;	std::string* str2 = nullptr;
 	node->addChild(_標識符());
 	if (word->getType() == LBRACK) {
@@ -1700,6 +1719,9 @@ SymbolNode* Parser::_無返回值函數調用語句() {
 	int type = 0;	std::string* str = nullptr;
 
 	node->addChild(_標識符(&type, &str));
+
+	IrGenerator::addPrecallIr(type, str);
+
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
 	node->addChild((nodeForErrorDE = _值參數表()));		//node->addChild(_值參數表());
@@ -1753,6 +1775,11 @@ SymbolNode* Parser::_主函數() {
 	getsym();
 	TableTools::addFunc(it - 1);
 	node->addChild(_複合語句());
+
+	if (IrGenerator::lastIr()->getOp() != IR_RET) {
+		IrGenerator::addReturnIr(NOTYPE, 0, nullptr);
+	}
+
 	node->addChild(new SymbolNode(word));	// word->getType() is RBRACE
 	getsym();
 	return node;

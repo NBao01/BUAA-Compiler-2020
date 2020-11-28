@@ -14,6 +14,17 @@
 #define MIPS_LA			8
 #define MIPS_SYSCALL	9
 #define MIPS_LABEL		10
+#define MIPS_ADDI		11
+#define MIPS_J			12
+#define MIPS_JAL		13
+#define MIPS_JR			14
+#define MIPS_BLT		15
+#define MIPS_BLE		16
+#define MIPS_BGT		17
+#define MIPS_BGE		18
+#define MIPS_BEQ		19
+#define MIPS_BNE		20
+#define MIPS_SLL		21
 
 // REGISTER FILE
 #define $zero	0

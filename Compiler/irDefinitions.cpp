@@ -24,5 +24,6 @@ const std::string irInstructions[] = {
 	"NEQ",
 	"LABEL",
 	"ARRAYGET",
-	"ARRAYSET"
+	"ARRAYSET",
+	"PRECALL"
 };

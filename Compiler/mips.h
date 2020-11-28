@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include "mipsDefinitions.h"
+#include "table.h"
+#include "ir.h"
 
 class DataItem {
 private:
@@ -45,6 +47,10 @@ extern std::vector<TextItem*> textSegment;
 class MipsGenerator {
 private:
 	static std::string* strConLabelGen();
+	static int bInstrJudger(int cmpIr, int bIr);
+	static int getRegL0R1(IrItem* ir, int curScope, int lr);
+	static void initLocals(int scope);
+	static bool isJumpingBack(std::string* label);
 public:
 	static void output();
 	static void generate();
@@ -54,6 +60,9 @@ public:
 	static void addR(int instr, int rs, int rt, int rd);
 	static void addI(int instr, int rs, int rt, int immediate, std::string* label);
 	static void addSyscall();
+	static void addLabel(std::string* label);
+	static void addJ(int instr, std::string* label);
+	static void addB(int instr, int rs, int rt, std::string* label);
 };
 
 #endif // !__MIPS_H__

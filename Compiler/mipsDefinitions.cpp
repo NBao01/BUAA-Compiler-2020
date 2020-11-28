@@ -10,7 +10,19 @@ const std::string mipsInstructions[] = {
 	"sw",
 	"li",
 	"la",
-	"syscall"
+	"syscall",
+	"label",
+	"addi",
+	"j",
+	"jal",
+	"jr",
+	"blt",
+	"ble",
+	"bgt",
+	"bge",
+	"beq",
+	"bne",
+	"sll"
 };
 
 const std::string regstr[] = {

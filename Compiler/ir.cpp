@@ -276,6 +276,7 @@ void IrGenerator::output() {
 			}
 			out << std::endl;
 			break;
+		case IR_PRECALL:
 		case IR_CALL:
 			out << irInstructions[op] << " " << *(*it)->getLop() << std::endl;
 			break;
@@ -367,7 +368,7 @@ void IrGenerator::addScanIr(std::string* str) {
 
 void IrGenerator::addAssignIr(std::string* res, int lopType, int lopInt, std::string* lop) {
 	// If R-value of Assign statement is a expression, we don't need an assign ir, instead of modify last ir's res.
-	if (lopType == TMPTYPE) {
+	if (lopType == TMPTYPE && lop->find("$RET") == std::string::npos) {
 		IrItem* lastIr = IrList.back();
 		assert(*lastIr->getRes() == *lop);
 		lastIr->setRes(res);
@@ -392,6 +393,11 @@ void IrGenerator::addFuncDefIr(int type, std::string* lop) {
 
 void IrGenerator::addReturnIr(int type, int num, std::string* lop) {
 	IrList.push_back(new IrItem(IR_RET, type, NOTYPE, num, 0, lop, nullptr, nullptr));
+}
+
+void IrGenerator::addPrecallIr(int type, std::string* lop) {
+	assert(type == IDTYPE);
+	IrList.push_back(new IrItem(IR_PRECALL, type, NOTYPE, 0, 0, lop, nullptr, nullptr));
 }
 
 void IrGenerator::addCallIr(int type, std::string* lop) {
@@ -433,4 +439,8 @@ void IrGenerator::addToLastSwitch(std::vector<IrItem*>* before, std::string* lab
 	}
 
 	IrList.insert(it + 1, before->begin(), before->end());
+}
+
+IrItem* IrGenerator::lastIr() {
+	return IrList.back();
 }
