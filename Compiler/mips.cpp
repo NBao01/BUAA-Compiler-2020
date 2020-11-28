@@ -520,18 +520,30 @@ void MipsGenerator::generate() {
 				RegfileManager::writeAllBack();
 			//}                             
 			addB(bInstrJudger((*(it - 1))->getOp(), ir->getOp()), rs, rt, ir->getRes());
-			if ((*(it + 1))->getOp() != IR_EQL                    || 
-				(*(it + 1))->getLopType() != (*(it - 1))->getLopType() ||
-				(*(it + 1))->getLopInt()  !=  (*(it - 1))->getLopInt() ||
-				*(*(it + 1))->getLop()    !=    *(*(it - 1))->getLop() ) {
+			if (
+				!(  //	To ensure not set invalid for left op of first while judge.
+					(*(it + 1))->getOp() == IR_LABEL &&
+					(*(it + 1))->getRes()->find("While") != std::string::npos
+				) && 
+				!(  //	To ensure not set invalid for switch key.
+					(*(it + 1))->getOp() == IR_EQL                         && 
+					(*(it + 1))->getLopType() == (*(it - 1))->getLopType() &&
+					(*(it + 1))->getLopInt()  ==  (*(it - 1))->getLopInt() &&
+					*(*(it + 1))->getLop()    ==    *(*(it - 1))->getLop()
+				)) {
 				if ((*(it - 1))->getLopType() == TMPTYPE || (*(it - 1))->getLopType() == TMPTYPE_CH ||
 					(*(it - 1))->getLopType() == INTTYPE || (*(it - 1))->getLopType() == CHTYPE) {
 					RegfileManager::setInvalid(rs);
-				}	//	To ensure not set invalid for switch key.
+				}	
 			}
-			if ((*(it - 1))->getRopType() == TMPTYPE || (*(it - 1))->getRopType() == TMPTYPE_CH ||
-				(*(it - 1))->getRopType() == INTTYPE || (*(it - 1))->getRopType() == CHTYPE) {
-				RegfileManager::setInvalid(rt);
+			if (!(  //	To ensure not set invalid for left op of first while judge.
+				(*(it + 1))->getOp() == IR_LABEL &&
+				(*(it + 1))->getRes()->find("While") != std::string::npos
+				)) {
+				if ((*(it - 1))->getRopType() == TMPTYPE || (*(it - 1))->getRopType() == TMPTYPE_CH ||
+					(*(it - 1))->getRopType() == INTTYPE || (*(it - 1))->getRopType() == CHTYPE) {
+					RegfileManager::setInvalid(rt);
+				}
 			}
 			break;
 		case IR_GOTO:
