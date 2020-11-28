@@ -185,6 +185,7 @@ void MipsGenerator::initLocals(int scope) {
 			if (table[i]->getType() == PARAM && table[i]->getOffset() <= 8) {
 				Reg* reg = RegfileManager::mapping(table[i], false, $a1 + table[i]->getOffset() / 4);
 				table[i]->setCache(reg);
+				reg->setValid(true);
 				reg->setLabel(table[i]->getLabel());
 				reg->setDirty(true);
 			}
@@ -252,7 +253,6 @@ void MipsGenerator::generate() {
 	Reg* r = nullptr;
 	int rs = 0, rt = 0;
 	int arguments = 0;
-	int returns = 0;
 	std::vector<IrItem*>::iterator it;
 	for (it = IrList.begin(); it != IrList.end(); it++) {
 		IrItem* ir = *it;
@@ -293,7 +293,7 @@ void MipsGenerator::generate() {
 				addSyscall();
 			}
 			else if (ir->getLopType() == TMPTYPE) {
-				int rs = RegfileManager::searchTemp(ir->getLop());
+				rs = RegfileManager::searchTemp(ir->getLop());
 				addR(MIPS_ADD, rs, $zero, $a0);
 				addI(MIPS_LI, 0, $v0, 1, nullptr);
 				addSyscall();
@@ -302,7 +302,7 @@ void MipsGenerator::generate() {
 				addSyscall();
 			}
 			else if (ir->getLopType() == TMPTYPE_CH) {
-				int rs = RegfileManager::searchTemp(ir->getLop());
+				rs = RegfileManager::searchTemp(ir->getLop());
 				addR(MIPS_ADD, rs, $zero, $a0);
 				addI(MIPS_LI, 0, $v0, 11, nullptr);
 				addSyscall();
@@ -394,6 +394,7 @@ void MipsGenerator::generate() {
 			addR(ir->getOp(), rs, rt, r->getId());
 			break;
 		case IR_RET:
+			RegfileManager::writeSBack();
 			if (ir->getLopType() == INTTYPE) {
 				addI(MIPS_LI, 0, $v1, ir->getLopInt(), nullptr);
 			}
@@ -418,6 +419,7 @@ void MipsGenerator::generate() {
 			break;
 		case IR_PRECALL:
 			addI(MIPS_ADDI, $sp, $fp, 0, nullptr);
+			RegfileManager::writeSBack();
 			RegfileManager::saveEnv();
 			addI(MIPS_ADDI, $sp, $sp, -TableTools::getstackSpaceOfScope(ir->getLop()), nullptr);
 			arguments = 0;
@@ -478,17 +480,17 @@ void MipsGenerator::generate() {
 			addI(MIPS_ADDI, $sp, $sp, TableTools::getstackSpaceOfScope(ir->getLop()), nullptr);
 			RegfileManager::restoreEnv();
 			if (ti->getRetType() != VOID) {		// Has Return-Value
-				std::stringstream ss;	std::string* s = new std::string();
-				ss << "$RET_"; ss << returns++; ss >> *s;
-				r = RegfileManager::mappingTemp(s);
-				addI(MIPS_ADDI, $v1, r->getId(), 0, nullptr);
+				if (ir->getRes() != nullptr) {
+					r = RegfileManager::mappingTemp(ir->getRes());
+					addI(MIPS_ADDI, $v1, r->getId(), 0, nullptr);
+				}
 			}
 			break;
 		case IR_LABEL:
-			if (ir->getRes()->find("While") != std::string::npos ||
-				ir->getRes()->find("For") != std::string::npos) {
+			//if (ir->getRes()->find("While") != std::string::npos ||
+			//	ir->getRes()->find("For") != std::string::npos) {
 				RegfileManager::writeAllBack();
-			}
+			//}
 			addLabel(ir->getRes());
 			break;
 		case IR_EQL:
@@ -500,15 +502,15 @@ void MipsGenerator::generate() {
 			rs = getRegL0R1(ir, curScope, 0);
 			rt = getRegL0R1(ir, curScope, 1);
 			it++;	ir = *it;
-			if (isJumpingBack(ir->getRes())) {
+			//if (isJumpingBack(ir->getRes())) {
 				RegfileManager::writeAllBack();
-			}                             
+			//}                             
 			addB(bInstrJudger((*(it - 1))->getOp(), ir->getOp()), rs, rt, ir->getRes());
 			break;
 		case IR_GOTO:
-			if (isJumpingBack(ir->getRes())) {
+			//if (isJumpingBack(ir->getRes())) {
 				RegfileManager::writeAllBack();
-			}
+			//}
 			addJ(MIPS_J, ir->getRes());
 			break;
 		case IR_ARRAYGET:

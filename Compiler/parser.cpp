@@ -1321,13 +1321,7 @@ SymbolNode* Parser::_因子(int* type, int* num, std::string** str) {
 		else {
 			*type = TMPTYPE;
 		}
-		node->addChild(_有返回值函數調用語句());
-		static int i = 0;
-		std::string strI;
-		*str = new std::string("$RET_");
-		std::stringstream ss;
-		ss << i++;	ss >> strI;
-		**str += strI;
+		node->addChild(_有返回值函數調用語句(str));
 	}
 	return node;
 }
@@ -1382,6 +1376,55 @@ SymbolNode* Parser::_有返回值函數調用語句() {
 	IrGenerator::addPrecallIr(type, str);
 	IrList.insert(IrList.end(), pushList.begin(), pushList.end());
 	IrGenerator::addCallIr(type, str);
+	return node;
+}
+
+// ＜有返回值函数调用语句＞ ::= ＜标识符＞'('＜值参数表＞')' 
+SymbolNode* Parser::_有返回值函數調用語句(std::string **retLabel) {
+	Word* wordForErrorDE = word;
+	SymbolNode* nodeForErrorDE;
+	SymbolNode* node = new SymbolNode(有返回值函數調用語句);
+	int type = 0;	std::string* str = nullptr;
+
+	// ERROR_C JUDGER
+	bool errorC = TableTools::errorJudgerC(word);
+	// ERROR_C JUDGER END
+
+	node->addChild(_標識符(&type, &str));
+
+	std::vector<IrItem*> pushList;
+
+	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
+	getsym();
+	node->addChild((nodeForErrorDE = _值參數表(&pushList)));		//node->addChild(_值參數表());
+	if (word->getType() == RPARENT) {
+		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
+		getsym();
+	}
+	else {
+		// ERROR_L JUDGER
+		ErrorHandler::addErrorItem(ERROR_L, prevWord->getLine());
+		// ERROR_L JUDGER END
+	}
+
+	// ERROR_D JUDGER
+	bool errorD = errorC ? true : TableTools::errorJudgerD(wordForErrorDE, nodeForErrorDE);
+	// ERROR_D JUDGER END
+
+	// ERROR_E JUDGER
+	errorD ? true : TableTools::errorJudgerE(wordForErrorDE, nodeForErrorDE);
+	// ERROR_E JUDGER
+
+	*retLabel = new std::string("$RET_");
+	static int i = 0;
+	std::string strI;
+	std::stringstream ss;
+	ss << i++;	ss >> strI;
+	**retLabel += strI;
+
+	IrGenerator::addPrecallIr(type, str);
+	IrList.insert(IrList.end(), pushList.begin(), pushList.end());
+	IrGenerator::addCallIr(type, str, *retLabel);
 	return node;
 }
 

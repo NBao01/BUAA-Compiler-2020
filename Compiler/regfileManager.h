@@ -38,6 +38,7 @@ public:
 	static Reg* mappingTemp();
 	static int searchTemp(std::string* label);
 	static void writeAllBack();
+	static void writeSBack();
 	static void flush();
 	static void saveEnv();
 	static void restoreEnv();

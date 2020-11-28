@@ -196,6 +196,25 @@ void RegfileManager::writeAllBack() {
 	}
 }
 
+void RegfileManager::writeSBack() {
+	for (int i = 16; i < 24; i++) {
+		Reg* reg = regfile[i];
+		if (reg->isValid()) {
+			TableItem* ti = TableTools::searchByLabel(reg->getLabel());
+			if (reg->isDirty()) {
+				if (ti->getScope() == 0) {
+					MipsGenerator::addI(MIPS_SW, 0, reg->getId(), 0, ti->getLabel());
+				}
+				else {
+					MipsGenerator::addI(MIPS_SW, $sp, reg->getId(), ti->getOffset(), nullptr);
+				}
+			}
+			ti->setCache(nullptr);
+			reg->setValid(false);
+		}
+	}
+}
+
 void RegfileManager::flush() {
 	for (int i = 0; i < 10; i++) {
 		regfile[i <= 7 ? i + 8 : i + 16]->setValid(false);

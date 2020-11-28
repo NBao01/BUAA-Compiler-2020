@@ -402,9 +402,9 @@ void IrGenerator::addPrecallIr(int type, std::string* lop) {
 	IrList.push_back(new IrItem(IR_PRECALL, type, NOTYPE, 0, 0, lop, nullptr, nullptr));
 }
 
-void IrGenerator::addCallIr(int type, std::string* lop) {
+void IrGenerator::addCallIr(int type, std::string* lop, std::string* retLabel) {
 	assert(type == IDTYPE);
-	IrList.push_back(new IrItem(IR_CALL, type, NOTYPE, 0, 0, lop, nullptr, nullptr));
+	IrList.push_back(new IrItem(IR_CALL, type, NOTYPE, 0, 0, lop, nullptr, retLabel));
 }
 
 void IrGenerator::addPushIr(int type, int num, std::string* lop) {
