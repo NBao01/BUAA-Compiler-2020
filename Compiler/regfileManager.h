@@ -12,6 +12,7 @@ private:
 	bool valid;
 	bool dirty;
 	bool temp;
+	bool inStack;
 public:
 	Reg(int id);
 	int getId();
@@ -19,10 +20,12 @@ public:
 	bool isValid();
 	bool isDirty();
 	bool isTemp();
+	bool isInStack();
 	void setLabel(std::string* label);
 	void setValid(bool valid);
 	void setDirty(bool dirty);
 	void setTemp(bool temp);
+	void setInStack(bool inStack);
 };
 
 extern Reg* regfile[32];
@@ -42,6 +45,7 @@ public:
 	static void flush();
 	static void saveEnv();
 	static void restoreEnv();
+	static void setInvalid(int regId);
 };
 
 #endif // !__REGFILEMANAGER_H__

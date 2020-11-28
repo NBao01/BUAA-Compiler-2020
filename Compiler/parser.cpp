@@ -1295,6 +1295,15 @@ SymbolNode* Parser::_因子(int* type, int* num, std::string** str) {
 		node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 		getsym();
 		node->addChild(_表達式(type, num, str));
+		// Char Type need converting
+		if (*type == TMPTYPE_CH) {
+			*type = TMPTYPE;
+		}
+		else if (*type == CHTYPE) {
+			*type = INTTYPE;
+			*num = (*str)->at(0);
+			*str = nullptr;
+		}
 		if (word->getType() == RPARENT) {
 			node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 			getsym();

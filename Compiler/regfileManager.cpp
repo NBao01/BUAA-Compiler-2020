@@ -12,6 +12,7 @@ Reg::Reg(int id) {
 	this->valid = false;
 	this->dirty = false;
 	this->temp = false;
+	this->inStack = false;
 }
 
 int Reg::getId() {
@@ -34,6 +35,10 @@ bool Reg::isTemp() {
 	return temp;
 }
 
+bool Reg::isInStack() {
+	return inStack;
+}
+
 void Reg::setLabel(std::string* label) {
 	this->label = label;
 }
@@ -50,6 +55,10 @@ void Reg::setTemp(bool temp) {
 	this->temp = temp;
 }
 
+void Reg::setInStack(bool inStack) {
+	this->inStack = inStack;
+}
+
 void RegfileManager::init() {
 	for (int i = 0; i < 32; i++) {
 		regfile[i] = new Reg(i);
@@ -60,8 +69,27 @@ Reg* RegfileManager::getTempReg() {
 	static int i = 0;
 	Reg* reg = i <= 7 ? regfile[i + 8] : regfile[i + 16];
 	i++; if (i > 9) { i -= 10; } // i = (i + 1) % 10;
-	// TODO: Write Back to Memory
-	if (reg->isValid()&& !reg->isTemp()) {
+
+	/*int regId = -1;
+	for (int i = 0; i < 10; i++) {
+		int j = i <= 7 ? i + 8 : i + 16;
+		if (!regfile[j]->isValid()) {
+			regId = j;
+			break;
+		}
+	}
+	if (regId == -1) {	// No invalid regs
+		static int roundRobin = 0;
+		do {
+			regId = roundRobin <= 7 ? roundRobin + 8 : roundRobin + 16;
+			roundRobin = (roundRobin + 1) % 10;
+		} while (!regfile[regId]->isTemp());
+		// You can't use a valid temp reg, for the value in the reg will disappear!
+	}
+
+	Reg* reg = regfile[regId];*/
+	if (reg->isValid() && !reg->isTemp()) {
+		// TODO: Write Back to Memory
 		TableItem* ti = TableTools::searchByLabel(reg->getLabel());
 		if (reg->isDirty()) {
 			TableItem* ti = TableTools::searchByLabel(reg->getLabel());
@@ -141,11 +169,11 @@ Reg* RegfileManager::mappingTemp(std::string* label) {
 	return reg;
 }
 
-// Reg for constant
+// Reg for constant, No-Name-Reg, Use at once, so set valid as false directly.
 Reg* RegfileManager::mappingTemp() {
 	Reg* reg = RegfileManager::getTempReg();
 	reg->setLabel(nullptr);
-	reg->setTemp(true);
+	reg->setValid(false);
 	return reg;
 }
 
@@ -228,7 +256,9 @@ void RegfileManager::saveEnv() {
 	int stackSpace = 4;		//	Reserve space for $ra
 	for (int i = 5; i < 26; i++) {
 		if (regfile[i]->isValid()) {
+			// This reg will not be invalid when push arguments.
 			stackSpace += 4;
+			regfile[i]->setInStack(true);
 		}
 	}
 	MipsGenerator::addI(MIPS_ADDI, $sp, $sp, -stackSpace, nullptr);
@@ -237,6 +267,7 @@ void RegfileManager::saveEnv() {
 		if (regfile[i]->isValid()) {
 			MipsGenerator::addI(MIPS_SW, $sp, i, curOffset, nullptr);
 			curOffset += 4;
+			regfile[i]->setInStack(true);
 		}
 	}
 	assert(curOffset == stackSpace - 4);
@@ -272,9 +303,11 @@ void RegfileManager::saveEnv() {
 void RegfileManager::restoreEnv() {
 	int curOffset = 0;
 	for (int i = 5; i < 26; i++) {
-		if (regfile[i]->isValid()) {
+		//if (regfile[i]->isValid()) {
+		if (regfile[i]->isInStack()) {
 			MipsGenerator::addI(MIPS_LW, $sp, i, curOffset, nullptr);
 			curOffset += 4;
+			regfile[i]->setInStack(false);
 		}
 	}
 	MipsGenerator::addI(MIPS_LW, $sp, $ra, curOffset, nullptr);
@@ -305,4 +338,8 @@ void RegfileManager::restoreEnv() {
 	MipsGenerator::addI(MIPS_LW, $sp, $ra, 84, nullptr);
 	MipsGenerator::addI(MIPS_ADDI, $sp, $sp, 88, nullptr);
 	*/
+}
+
+void RegfileManager::setInvalid(int regId) {
+	regfile[regId]->setValid(false);
 }
