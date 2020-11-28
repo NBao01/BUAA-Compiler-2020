@@ -430,15 +430,19 @@ void IrGenerator::addGotoIr(std::string* label) {
 	IrList.push_back(new IrItem(IR_GOTO, NOTYPE, NOTYPE, 0, 0, nullptr, nullptr, label));
 }
 
+// Find the first label after the Switch_x label, insert vector before to the case0_or_default label's before.
 void IrGenerator::addToLastSwitch(std::vector<IrItem*>* before, std::string* label_switch) {
-	std::vector<IrItem*>::iterator it;
+	std::vector<IrItem*>::iterator it, case0_or_default_it;
 	for (it = IrList.end() - 1; ; --it) {
 		if ((*it)->getOp() == IR_LABEL && *label_switch == *(*it)->getRes()) {
 			break;
 		}
+		if ((*it)->getOp() == IR_LABEL) {
+			case0_or_default_it = it;
+		}
 	}
 
-	IrList.insert(it + 1, before->begin(), before->end());
+	IrList.insert(case0_or_default_it, before->begin(), before->end());
 }
 
 IrItem* IrGenerator::lastIr() {

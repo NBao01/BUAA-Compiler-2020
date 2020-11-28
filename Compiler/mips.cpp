@@ -327,12 +327,15 @@ void MipsGenerator::generate() {
 				addI(MIPS_LI, 0, $v0, 12, nullptr);
 			}
 			addSyscall();
-			if (ti->getScope() == 0) {
+			r = ti->getCache() == nullptr ? RegfileManager::mapping(ti) : ti->getCache();	// intent write
+			r->setDirty(true);
+			addI(MIPS_ADDI, $v0, r->getId(), 0, nullptr);
+			/*if (ti->getScope() == 0) {
 				addI(MIPS_SW, 0, $v0, 0, ti->getLabel());
 			}
 			else {
 				addI(MIPS_SW, $sp, $v0, ti->getOffset(), nullptr);
-			}
+			}*/
 			break;
 		case IR_ASSIGN:
 			ti = TableTools::search(ir->getRes(), curScope);

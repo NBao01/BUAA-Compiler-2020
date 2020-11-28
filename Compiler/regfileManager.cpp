@@ -61,13 +61,16 @@ Reg* RegfileManager::getTempReg() {
 	Reg* reg = i <= 7 ? regfile[i + 8] : regfile[i + 16];
 	i++; if (i > 9) { i -= 10; } // i = (i + 1) % 10;
 	// TODO: Write Back to Memory
-	if (!reg->isTemp() && reg->isValid() && reg->isDirty()) {
+	if (reg->isValid()&& !reg->isTemp()) {
 		TableItem* ti = TableTools::searchByLabel(reg->getLabel());
-		if (ti->getScope() == 0) {
-			MipsGenerator::addI(MIPS_SW, 0, reg->getId(), 0, ti->getLabel());
-		}
-		else {
-			MipsGenerator::addI(MIPS_SW, $sp, reg->getId(), ti->getOffset(), nullptr);
+		if (reg->isDirty()) {
+			TableItem* ti = TableTools::searchByLabel(reg->getLabel());
+			if (ti->getScope() == 0) {
+				MipsGenerator::addI(MIPS_SW, 0, reg->getId(), 0, ti->getLabel());
+			}
+			else {
+				MipsGenerator::addI(MIPS_SW, $sp, reg->getId(), ti->getOffset(), nullptr);
+			}
 		}
 		ti->setCache(nullptr);
 	}
@@ -83,13 +86,15 @@ Reg* RegfileManager::getSavedReg() {
 	Reg* reg = regfile[i + 16];
 	i++; if (i > 7) { i -= 8; } // i = (i + 1) % 8;
 	// TODO: Write Back to Memory
-	if (reg->isValid() && reg->isDirty()) {
+	if (reg->isValid()) {
 		TableItem* ti = TableTools::searchByLabel(reg->getLabel());
-		if (ti->getScope() == 0) {
-			MipsGenerator::addI(MIPS_SW, 0, reg->getId(), 0, ti->getLabel());
-		}
-		else {
-			MipsGenerator::addI(MIPS_SW, $sp, reg->getId(), ti->getOffset(), nullptr);
+		if (reg->isDirty()) {
+			if (ti->getScope() == 0) {
+				MipsGenerator::addI(MIPS_SW, 0, reg->getId(), 0, ti->getLabel());
+			}
+			else {
+				MipsGenerator::addI(MIPS_SW, $sp, reg->getId(), ti->getOffset(), nullptr);
+			}
 		}
 		ti->setCache(nullptr);
 	}
@@ -158,13 +163,15 @@ int RegfileManager::searchTemp(std::string* label) {
 void RegfileManager::writeAllBack() {
 	for (int i = 0; i < 10; i++) {
 		Reg* reg = regfile[i <= 7 ? i + 8 : i + 16];
-		if (reg->isValid() && reg->isDirty()) {
+		if (!reg->isTemp() && reg->isValid()) {
 			TableItem* ti = TableTools::searchByLabel(reg->getLabel());
-			if (ti->getScope() == 0) {
-				MipsGenerator::addI(MIPS_SW, 0, reg->getId(), 0, ti->getLabel());
-			}
-			else {
-				MipsGenerator::addI(MIPS_SW, $sp, reg->getId(), ti->getOffset(), nullptr);
+			if (reg->isDirty()) {
+				if (ti->getScope() == 0) {
+					MipsGenerator::addI(MIPS_SW, 0, reg->getId(), 0, ti->getLabel());
+				}
+				else {
+					MipsGenerator::addI(MIPS_SW, $sp, reg->getId(), ti->getOffset(), nullptr);
+				}
 			}
 			ti->setCache(nullptr);
 			reg->setValid(false);
@@ -172,13 +179,15 @@ void RegfileManager::writeAllBack() {
 	}
 	for (int i = 16; i < 24; i++) {
 		Reg* reg = regfile[i];
-		if (reg->isValid() && reg->isDirty()) {
+		if (reg->isValid()) {
 			TableItem* ti = TableTools::searchByLabel(reg->getLabel());
-			if (ti->getScope() == 0) {
-				MipsGenerator::addI(MIPS_SW, 0, reg->getId(), 0, ti->getLabel());
-			}
-			else {
-				MipsGenerator::addI(MIPS_SW, $sp, reg->getId(), ti->getOffset(), nullptr);
+			if (reg->isDirty()) {
+				if (ti->getScope() == 0) {
+					MipsGenerator::addI(MIPS_SW, 0, reg->getId(), 0, ti->getLabel());
+				}
+				else {
+					MipsGenerator::addI(MIPS_SW, $sp, reg->getId(), ti->getOffset(), nullptr);
+				}
 			}
 			ti->setCache(nullptr);
 			reg->setValid(false);
