@@ -1356,11 +1356,11 @@ SymbolNode* Parser::_有返回值函數調用語句() {
 
 	node->addChild(_標識符(&type, &str));
 
-	IrGenerator::addPrecallIr(type, str);
+	std::vector<IrItem*> pushList;
 
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
-	node->addChild((nodeForErrorDE = _值參數表(str)));		//node->addChild(_值參數表());
+	node->addChild((nodeForErrorDE = _值參數表(&pushList)));		//node->addChild(_值參數表());
 	if (word->getType() == RPARENT) {
 		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 		getsym();
@@ -1379,22 +1379,27 @@ SymbolNode* Parser::_有返回值函數調用語句() {
 	errorD ? true : TableTools::errorJudgerE(wordForErrorDE, nodeForErrorDE);
 	// ERROR_E JUDGER
 
+	IrGenerator::addPrecallIr(type, str);
+	IrList.insert(IrList.end(), pushList.begin(), pushList.end());
 	IrGenerator::addCallIr(type, str);
 	return node;
 }
 
 // ＜值参数表＞ ::= ＜表达式＞{,＜表达式＞}｜＜空＞
-SymbolNode* Parser::_值參數表(std::string* funcName) {
+SymbolNode* Parser::_值參數表(std::vector<IrItem*>* pushList) {
 	SymbolNode* node = new SymbolNode(值參數表);
 	int type = 0, num = 0;	std::string* str = nullptr;
 	if (word->getType() != RPARENT && word->getType() != SEMICN) {
 		node->addChild(_表達式(&type, &num, &str));
-		IrGenerator::addPushIr(type, num, str, funcName);
+		// IrGenerator::addPushIr(type, num, str);
+		pushList->push_back(new IrItem(IR_PUSH, type, NOTYPE, num, 0, str, nullptr, nullptr));
 		while (word->getType() == COMMA) {
 			node->addChild(new SymbolNode(word));	// word->getType() is COMMA
 			getsym();
 			node->addChild(_表達式(&type, &num, &str));
-			IrGenerator::addPushIr(type, num, str, funcName);
+			// IrGenerator::addPushIr(type, num, str);
+			pushList->push_back(new IrItem(IR_PUSH, type, NOTYPE, num, 0, str, nullptr, nullptr));
+
 		}
 	}
 	return node;
@@ -1736,11 +1741,11 @@ SymbolNode* Parser::_無返回值函數調用語句() {
 
 	node->addChild(_標識符(&type, &str));
 
-	IrGenerator::addPrecallIr(type, str);
+	std::vector<IrItem*> pushList;
 
 	node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 	getsym();
-	node->addChild((nodeForErrorDE = _值參數表(str)));		//node->addChild(_值參數表());
+	node->addChild((nodeForErrorDE = _值參數表(&pushList)));		//node->addChild(_值參數表());
 	if (word->getType() == RPARENT) {
 		node->addChild(new SymbolNode(word));	// word->getType() is RPARENT
 		getsym();
@@ -1759,6 +1764,8 @@ SymbolNode* Parser::_無返回值函數調用語句() {
 	errorD ? true : TableTools::errorJudgerE(wordForErrorDE, nodeForErrorDE);
 	// ERROR_E JUDGER
 
+	IrGenerator::addPrecallIr(type, str);
+	IrList.insert(IrList.end(), pushList.begin(), pushList.end());
 	IrGenerator::addCallIr(type, str);
 	return node;
 }

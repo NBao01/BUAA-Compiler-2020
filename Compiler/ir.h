@@ -64,7 +64,7 @@ public:
 	static void addReturnIr(int type, int num, std::string* lop);
 	static void addPrecallIr(int type, std::string* lop);
 	static void addCallIr(int type, std::string* lop);
-	static void addPushIr(int type, int num, std::string* lop, std::string* funcName);
+	static void addPushIr(int type, int num, std::string* lop);
 	static void addComparisonIr(
 		int op, int lopType, int ropType, int lopInt, int ropInt,std::string* lop, std::string* rop);
 	static void addLabelIr(std::string* label);

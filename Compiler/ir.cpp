@@ -407,8 +407,8 @@ void IrGenerator::addCallIr(int type, std::string* lop) {
 	IrList.push_back(new IrItem(IR_CALL, type, NOTYPE, 0, 0, lop, nullptr, nullptr));
 }
 
-void IrGenerator::addPushIr(int type, int num, std::string* lop, std::string* funcName) {
-	IrList.push_back(new IrItem(IR_PUSH, type, NOTYPE, num, 0, lop, nullptr, funcName));
+void IrGenerator::addPushIr(int type, int num, std::string* lop) {
+	IrList.push_back(new IrItem(IR_PUSH, type, NOTYPE, num, 0, lop, nullptr, nullptr));
 }
 
 void IrGenerator::addComparisonIr(
