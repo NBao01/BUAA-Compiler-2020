@@ -2,8 +2,8 @@
 
 const std::string mipsInstructions[] = {
 	" ",
-	"add",
-	"sub",
+	"addu",
+	"subu",
 	"mul",
 	"div",
 	"lw",

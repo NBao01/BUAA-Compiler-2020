@@ -828,9 +828,15 @@ SymbolNode* Parser::_循環語句() {
 		getsym();
 		node->addChild(new SymbolNode(word));	// word->getType() is LPARENT
 		getsym();
+
+		int iterator = IrList.size();
+
 		node->addChild(_條件());
 
-		IrItem* cmpIr = IrGenerator::lastIr();
+		std::vector<IrItem*> cmpIrs;
+		for (; iterator < IrList.size(); iterator++) {
+			cmpIrs.push_back(IrList[iterator]);
+		}
 		IrGenerator::addBzIr(label_endwhile);
 		IrGenerator::addLabelIr(label_while);
 
@@ -845,7 +851,7 @@ SymbolNode* Parser::_循環語句() {
 		}
 		node->addChild(_語句());
 
-		IrList.push_back(cmpIr);
+		IrList.insert(IrList.end(), cmpIrs.begin(), cmpIrs.end());
 		IrGenerator::addBnzIr(label_while);
 		IrGenerator::addLabelIr(label_endwhile);
 	}
