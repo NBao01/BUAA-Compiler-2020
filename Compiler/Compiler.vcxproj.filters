@@ -93,6 +93,9 @@
     <ClInclude Include="regfileManager.h">
       <Filter>Header Files\MipsGenerator</Filter>
     </ClInclude>
+    <ClInclude Include="irOptimizer.h">
+      <Filter>Header Files\IrGenerator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -145,6 +148,9 @@
     </ClCompile>
     <ClCompile Include="regfileManager.cpp">
       <Filter>Source Files\MipsGenerator</Filter>
+    </ClCompile>
+    <ClCompile Include="irOptimizer.cpp">
+      <Filter>Source Files\IrGenerator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -25,5 +25,6 @@ const std::string irInstructions[] = {
 	"LABEL",
 	"ARRAYGET",
 	"ARRAYSET",
-	"PRECALL"
+	"PRECALL",
+	"SLL"
 };

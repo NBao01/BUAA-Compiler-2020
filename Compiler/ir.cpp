@@ -350,6 +350,18 @@ void IrGenerator::output() {
 		case IR_GOTO: 
 			out << irInstructions[op] << " " << *(*it)->getRes() << std::endl;
 			break;
+		case IR_SLL:
+			out << irInstructions[op] << " ";
+			if ((*it)->getLopType() == INTTYPE) {
+				out << (*it)->getLopInt();
+			}
+			else if ((*it)->getLopType() == CHTYPE) {
+				out << "'" << *(*it)->getLop() << "'";
+			}
+			else if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE || (*it)->getLopType() == TMPTYPE_CH) {
+				out << *(*it)->getLop();
+			}
+			out << " " << (*it)->getRopInt() << " " << *(*it)->getRes() << std::endl;
 		}
 	}
 	out.close();

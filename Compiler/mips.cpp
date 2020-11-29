@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cctype>
 #include "regfileManager.h"
+#include <cassert>
 
 std::vector<DataItem*> dataSegment;
 std::vector<TextItem*> textSegment;
@@ -607,6 +608,21 @@ void MipsGenerator::generate() {
 				ir->getRopType() == INTTYPE || ir->getRopType() == CHTYPE) {
 				RegfileManager::setInvalid(rt);
 			}
+			break;
+		case IR_SLL:
+			assert(ir->getRopType() == INTTYPE);
+			rs = getRegL0R1(ir, curScope, 0);
+
+			if (ir->getRes()->at(0) != '$') {
+				ti = TableTools::search(ir->getRes(), curScope);
+				// in RegfileManager::mapping(ti), load = false, intend write.
+				r = ti->getCache() == nullptr ? RegfileManager::mapping(ti) : ti->getCache();
+				r->setDirty(true);
+			}
+			else {
+				r = RegfileManager::mappingTemp(ir->getRes());
+			}
+			addI(MIPS_SLL, rs, r->getId(), ir->getRopInt(), nullptr);
 			break;
 		}
 	}

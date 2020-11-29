@@ -146,6 +146,7 @@
     <ClInclude Include="error.h" />
     <ClInclude Include="irDefinitions.h" />
     <ClInclude Include="ir.h" />
+    <ClInclude Include="irOptimizer.h" />
     <ClInclude Include="keywordJudger.h" />
     <ClInclude Include="lexicalAnalyzer.h" />
     <ClInclude Include="mips.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="error.cpp" />
     <ClCompile Include="irDefinitions.cpp" />
     <ClCompile Include="ir.cpp" />
+    <ClCompile Include="irOptimizer.cpp" />
     <ClCompile Include="keywordJudger.cpp" />
     <ClCompile Include="lexicalAnalyzer.cpp" />
     <ClCompile Include="Main.cpp" />

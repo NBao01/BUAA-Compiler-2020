@@ -3,6 +3,7 @@
 #include "error.h"
 #include "ir.h"
 #include "mips.h"
+#include "irOptimizer.h"
 
 void doNothing() {
 	return;
@@ -10,6 +11,8 @@ void doNothing() {
 
 int main() {
 	int step = 5;
+	bool optimize = true;
+
 	LexicalAnalyzer::analyze();
 	(step == 1) ? LexicalAnalyzer::output() : doNothing();
 
@@ -17,6 +20,8 @@ int main() {
 	(step == 2) ? SyntaxAnalyzer::output() : doNothing();
 
 	(step == 3) ? ErrorHandler::output() : doNothing();
+
+	(optimize) ? IrOptimizer::optimize() : doNothing();
 
 	(step == 4 || step == 5) ? IrGenerator::output() : doNothing();
 
