@@ -28,6 +28,7 @@
 #define IR_ARRAYSET 23
 #define IR_PRECALL	24
 #define IR_SLL		25
+#define IR_SRA		26
 
 extern const std::string irInstructions[];
 

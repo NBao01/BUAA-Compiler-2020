@@ -42,9 +42,8 @@ public:
 extern std::vector<IrItem*> IrList;
 
 class IrGenerator {
-private:
-	static std::string* tempIdentifierGen(bool rollback = false);
 public:
+	static std::string* tempIdentifierGen(bool rollback = false);
 	static std::string* ifLabelGen();
 	static std::string* endifLabelGen();
 	static std::string* whileLabelGen();

@@ -623,6 +623,31 @@ void MipsGenerator::generate() {
 				r = RegfileManager::mappingTemp(ir->getRes());
 			}
 			addI(MIPS_SLL, rs, r->getId(), ir->getRopInt(), nullptr);
+
+			if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH ||
+				ir->getLopType() == INTTYPE || ir->getLopType() == CHTYPE) {
+				RegfileManager::setInvalid(rs);
+			}
+			break;
+		case IR_SRA:
+			assert(ir->getRopType() == INTTYPE);
+			rs = getRegL0R1(ir, curScope, 0);
+
+			if (ir->getRes()->at(0) != '$') {
+				ti = TableTools::search(ir->getRes(), curScope);
+				// in RegfileManager::mapping(ti), load = false, intend write.
+				r = ti->getCache() == nullptr ? RegfileManager::mapping(ti) : ti->getCache();
+				r->setDirty(true);
+			}
+			else {
+				r = RegfileManager::mappingTemp(ir->getRes());
+			}
+			addI(MIPS_SRA, rs, r->getId(), ir->getRopInt(), nullptr);
+
+			if ((ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH ||
+				ir->getLopType() == INTTYPE || ir->getLopType() == CHTYPE) && ir->getRopInt() != 31) {
+				RegfileManager::setInvalid(rs);
+			}
 			break;
 		}
 	}
@@ -718,10 +743,12 @@ void MipsGenerator::output() {
 				<< *(*textIt)->getLabel() << std::endl;
 			break;
 		case MIPS_SLL:
+		case MIPS_SRA:
 			out << "\t" << mipsInstructions[(*textIt)->getInstr()] << " "
 				<< regstr[(*textIt)->getRt()] << ", "
 				<< regstr[(*textIt)->getRs()] << ", "
 				<< (*textIt)->getImmediate() << std::endl;
+			break;
 		}
 	}
 }

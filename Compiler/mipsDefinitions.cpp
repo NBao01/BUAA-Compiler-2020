@@ -22,7 +22,8 @@ const std::string mipsInstructions[] = {
 	"bge",
 	"beq",
 	"bne",
-	"sll"
+	"sll",
+	"sra"
 };
 
 const std::string regstr[] = {

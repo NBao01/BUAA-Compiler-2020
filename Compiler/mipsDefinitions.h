@@ -25,6 +25,7 @@
 #define MIPS_BEQ		19
 #define MIPS_BNE		20
 #define MIPS_SLL		21
+#define MIPS_SRA		22
 
 // REGISTER FILE
 #define $zero	0
