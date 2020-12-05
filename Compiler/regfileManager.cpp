@@ -92,7 +92,7 @@ Reg* RegfileManager::getTempReg() {
 		do {
 			regId = roundRobin <= 7 ? roundRobin + 8 : roundRobin + 16;
 			roundRobin = (roundRobin + 1) % 10;
-		} while (!regfile[regId]->isTemp());
+		} while (regfile[regId]->isTemp());
 		// You can't use a valid temp reg, for the value in the reg will disappear!
 	}
 

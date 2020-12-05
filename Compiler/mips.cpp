@@ -103,8 +103,13 @@ int MipsGenerator::getRegL0R1(IrItem* ir, int curScope, int lr) {
 	TableItem* ti = nullptr;
 	if (lr == 0) {		// Lop
 		if (ir->getLopType() == INTTYPE) {
-			r = RegfileManager::mappingTemp();
-			addI(MIPS_LI, 0, regId = r->getId(), ir->getLopInt(), nullptr);
+			if (ir->getLopInt() == 0) {
+				regId = $zero;
+			}
+			else {
+				r = RegfileManager::mappingTemp();
+				addI(MIPS_LI, 0, regId = r->getId(), ir->getLopInt(), nullptr);
+			}
 		}
 		else if (ir->getLopType() == CHTYPE) {
 			r = RegfileManager::mappingTemp();
@@ -123,8 +128,13 @@ int MipsGenerator::getRegL0R1(IrItem* ir, int curScope, int lr) {
 	}
 	else {
 		if (ir->getRopType() == INTTYPE) {
-			r = RegfileManager::mappingTemp();
-			addI(MIPS_LI, 0, regId = r->getId(), ir->getRopInt(), nullptr);
+			if (ir->getRopInt() == 0) {
+				regId = $zero;
+			}
+			else {
+				r = RegfileManager::mappingTemp();
+				addI(MIPS_LI, 0, regId = r->getId(), ir->getRopInt(), nullptr);
+			}
 		}
 		else if (ir->getRopType() == CHTYPE) {
 			r = RegfileManager::mappingTemp();
@@ -379,7 +389,111 @@ void MipsGenerator::generate() {
 			r->setDirty(true);
 			break;
 		case IR_ADD:
+			if (ir->getLopType() == INTTYPE && ir->getLopInt() != 0) {
+				rt = getRegL0R1(ir, curScope, 1);
+				if (ir->getRes()->at(0) != '$') {
+					ti = TableTools::search(ir->getRes(), curScope);
+					// in RegfileManager::mapping(ti), load = false, intend write.
+					r = ti->getCache() == nullptr ? RegfileManager::mapping(ti) : ti->getCache();
+					r->setDirty(true);
+				}
+				else {
+					r = RegfileManager::mappingTemp(ir->getRes());
+				}
+
+				addI(MIPS_ADDI, rt, r->getId(), ir->getLopInt(), nullptr);
+				if (ir->getRopType() == TMPTYPE || ir->getRopType() == TMPTYPE_CH ||
+					ir->getRopType() == INTTYPE || ir->getRopType() == CHTYPE) {
+					RegfileManager::setInvalid(rt);
+				}
+			}
+			else if (ir->getRopType() == INTTYPE && ir->getRopInt() != 0) {
+				rs = getRegL0R1(ir, curScope, 0);
+				if (ir->getRes()->at(0) != '$') {
+					ti = TableTools::search(ir->getRes(), curScope);
+					// in RegfileManager::mapping(ti), load = false, intend write.
+					r = ti->getCache() == nullptr ? RegfileManager::mapping(ti) : ti->getCache();
+					r->setDirty(true);
+				}
+				else {
+					r = RegfileManager::mappingTemp(ir->getRes());
+				}
+
+				addI(MIPS_ADDI, rs, r->getId(), ir->getRopInt(), nullptr);
+				if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH ||
+					ir->getLopType() == INTTYPE || ir->getLopType() == CHTYPE) {
+					RegfileManager::setInvalid(rs);
+				}
+			}
+			else {
+				rs = getRegL0R1(ir, curScope, 0);
+				rt = getRegL0R1(ir, curScope, 1);
+
+				if (ir->getRes()->at(0) != '$') {
+					ti = TableTools::search(ir->getRes(), curScope);
+					// in RegfileManager::mapping(ti), load = false, intend write.
+					r = ti->getCache() == nullptr ? RegfileManager::mapping(ti) : ti->getCache();
+					r->setDirty(true);
+				}
+				else {
+					r = RegfileManager::mappingTemp(ir->getRes());
+				}
+
+				addR(ir->getOp(), rs, rt, r->getId());
+				if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH ||
+					ir->getLopType() == INTTYPE || ir->getLopType() == CHTYPE) {
+					RegfileManager::setInvalid(rs);
+				}
+				if (ir->getRopType() == TMPTYPE || ir->getRopType() == TMPTYPE_CH ||
+					ir->getRopType() == INTTYPE || ir->getRopType() == CHTYPE) {
+					RegfileManager::setInvalid(rt);
+				}
+			}
+			break;
 		case IR_SUB:
+			if (ir->getRopType() == INTTYPE && ir->getRopInt() != 0) {
+				rs = getRegL0R1(ir, curScope, 0);
+				if (ir->getRes()->at(0) != '$') {
+					ti = TableTools::search(ir->getRes(), curScope);
+					// in RegfileManager::mapping(ti), load = false, intend write.
+					r = ti->getCache() == nullptr ? RegfileManager::mapping(ti) : ti->getCache();
+					r->setDirty(true);
+				}
+				else {
+					r = RegfileManager::mappingTemp(ir->getRes());
+				}
+
+				addI(MIPS_ADDI, rs, r->getId(), -ir->getRopInt(), nullptr);
+				if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH ||
+					ir->getLopType() == INTTYPE || ir->getLopType() == CHTYPE) {
+					RegfileManager::setInvalid(rs);
+				}
+			}
+			else {
+				rs = getRegL0R1(ir, curScope, 0);
+				rt = getRegL0R1(ir, curScope, 1);
+
+				if (ir->getRes()->at(0) != '$') {
+					ti = TableTools::search(ir->getRes(), curScope);
+					// in RegfileManager::mapping(ti), load = false, intend write.
+					r = ti->getCache() == nullptr ? RegfileManager::mapping(ti) : ti->getCache();
+					r->setDirty(true);
+				}
+				else {
+					r = RegfileManager::mappingTemp(ir->getRes());
+				}
+
+				addR(ir->getOp(), rs, rt, r->getId());
+				if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH ||
+					ir->getLopType() == INTTYPE || ir->getLopType() == CHTYPE) {
+					RegfileManager::setInvalid(rs);
+				}
+				if (ir->getRopType() == TMPTYPE || ir->getRopType() == TMPTYPE_CH ||
+					ir->getRopType() == INTTYPE || ir->getRopType() == CHTYPE) {
+					RegfileManager::setInvalid(rt);
+				}
+			}
+			break;
 		case IR_MUL:
 		case IR_DIV:
 			rs = getRegL0R1(ir, curScope, 0);
@@ -554,6 +668,10 @@ void MipsGenerator::generate() {
 			addJ(MIPS_J, ir->getRes());
 			break;
 		case IR_ARRAYGET:
+			/* rs - temp reg for real offset
+			*  rt - pesudo offset     - rop
+			*  r  - reg to load value - res
+			*/
 			if (ir->getRes()->at(0) != '$') {
 				ti = TableTools::search(ir->getRes(), curScope);
 				// in RegfileManager::mapping(ti), load = false, intend write.
@@ -565,9 +683,34 @@ void MipsGenerator::generate() {
 			}
 
 			ti = TableTools::search(ir->getLop(), curScope);
-
+			
+			// If and Elseif is used for optimize
 			if (ir->getRopType() == INTTYPE && ti->getCache(ir->getRopInt()) != nullptr) {
 				addI(MIPS_ADDI, ti->getCache(ir->getRopInt())->getId(), r->getId(), 0, nullptr);
+			}
+			else if (ir->getRopType() == INTTYPE) {
+				rs = RegfileManager::mappingTemp()->getId();
+				if (ti->getScope() == 0) {
+					if (ir->getRopInt() * 4  == 0) {
+						addI(MIPS_LW, $zero, r->getId(), 0, ti->getLabel());
+					}
+					else {
+						addI(MIPS_LI, 0, rs, ir->getRopInt() * 4, nullptr);
+						addI(MIPS_LW, rs, r->getId(), 0, ti->getLabel());
+					}
+				}
+				else {
+					if (ir->getRopInt() * 4 + ti->getOffset() == 0) {
+						addI(MIPS_LW, $sp, r->getId(), 0, nullptr);
+					}
+					else {
+						addI(MIPS_LI, 0, rs, ir->getRopInt() * 4 + ti->getOffset(), nullptr);
+						addR(MIPS_ADD, rs, $sp, rs);
+						addI(MIPS_LW, rs, r->getId(), 0, nullptr);
+					}
+				}
+
+				RegfileManager::setInvalid(rs);
 			}
 			else {
 				rt = getRegL0R1(ir, curScope, 1);
@@ -590,33 +733,68 @@ void MipsGenerator::generate() {
 			}
 			break;
 		case IR_ARRAYSET:
+			/* rs - value to be set - lop
+			*  rt - pesudo offset   - rop
+			*  r  - temp reg for real offset
+			*/
 			rs = getRegL0R1(ir, curScope, 0);	// value to be set
 
 			ti = TableTools::search(ir->getRes(), curScope);
-			rt = getRegL0R1(ir, curScope, 1);	// pseudo-offset 
-			r = RegfileManager::mappingTemp();	// temp reg for real-offset
-			addI(MIPS_SLL, rt, r->getId(), 2, nullptr);	// Actually, sll is a R-type Instruction
-			if (ti->getScope() == 0) {
-				addI(MIPS_SW, r->getId(), rs, 0, ti->getLabel());
+
+			if (ir->getRopType() == INTTYPE) {
+				r = RegfileManager::mappingTemp();	// temp reg for real-offset
+				if (ti->getScope() == 0) {
+					if (ir->getRopInt() * 4 == 0) {
+						addI(MIPS_SW, $zero, rs, 0, ti->getLabel());
+					}
+					else {
+						addI(MIPS_LI, 0, r->getId(), ir->getRopInt() * 4, nullptr);
+						addI(MIPS_SW, r->getId(), rs, 0, ti->getLabel());
+					}
+				}
+				else {
+					if (ir->getRopInt() * 4 + ti->getOffset() == 0) {
+						addI(MIPS_SW, $sp, rs, 0, nullptr);
+					}
+					else {
+						addI(MIPS_LI, 0, r->getId(), ir->getRopInt() * 4 + ti->getOffset(), nullptr);
+						addR(MIPS_ADD, r->getId(), $sp, r->getId());
+						addI(MIPS_SW, r->getId(), rs, 0, nullptr);
+					}
+				}
+				RegfileManager::setInvalid(r->getId());
+				if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH ||
+					ir->getLopType() == INTTYPE || ir->getLopType() == CHTYPE) {
+					RegfileManager::setInvalid(rs);
+				}
 			}
 			else {
-				addI(MIPS_ADDI, r->getId(), r->getId(), ti->getOffset(), nullptr);
-				addR(MIPS_ADD, r->getId(), $sp, r->getId());
-				addI(MIPS_SW, r->getId(), rs, 0, nullptr);
+				rt = getRegL0R1(ir, curScope, 1);	// pseudo-offset 
+				r = RegfileManager::mappingTemp();	// temp reg for real-offset
+				addI(MIPS_SLL, rt, r->getId(), 2, nullptr);	// Actually, sll is a R-type Instruction
+				if (ti->getScope() == 0) {
+					addI(MIPS_SW, r->getId(), rs, 0, ti->getLabel());
+				}
+				else {
+					addI(MIPS_ADDI, r->getId(), r->getId(), ti->getOffset(), nullptr);
+					addR(MIPS_ADD, r->getId(), $sp, r->getId());
+					addI(MIPS_SW, r->getId(), rs, 0, nullptr);
+				}
+				RegfileManager::setInvalid(r->getId());
+				if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH ||
+					ir->getLopType() == INTTYPE || ir->getLopType() == CHTYPE) {
+					RegfileManager::setInvalid(rs);
+				}
+				if (ir->getRopType() == TMPTYPE || ir->getRopType() == TMPTYPE_CH ||
+					ir->getRopType() == INTTYPE || ir->getRopType() == CHTYPE) {
+					RegfileManager::setInvalid(rt);
+				}
 			}
 
-			RegfileManager::setInvalid(r->getId());
-			if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH ||
-				ir->getLopType() == INTTYPE || ir->getLopType() == CHTYPE) {
-				RegfileManager::setInvalid(rs);
-			}
-			if (ir->getRopType() == TMPTYPE || ir->getRopType() == TMPTYPE_CH ||
-				ir->getRopType() == INTTYPE || ir->getRopType() == CHTYPE) {
-				RegfileManager::setInvalid(rt);
-			}
-
+			// For Array Cache
 			if ((ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH) && ir->getRopType() == INTTYPE) {
 				ti->setCache(regfile[rs], ir->getRopInt());
+				regfile[rs]->setTemp(false);
 				regfile[rs]->setValid(true);
 				regfile[rs]->setLabel(ti->getLabel());
 				regfile[rs]->setNOfArray(ir->getRopInt());

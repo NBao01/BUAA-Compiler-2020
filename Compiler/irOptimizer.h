@@ -8,6 +8,7 @@ class IrOptimizer {
 private:
 	static void mul2sll();
 	static void div2sra();
+	static void tempPropagation();
 public:
 	static void optimize();
 };

@@ -37,6 +37,12 @@ public:
 	std::string* getRop();
 	std::string* getRes();
 	void setRes(std::string* newRes);
+	void setLopType(int lopType);
+	void setRopType(int ropType);
+	void setLopInt(int lopInt);
+	void setRopInt(int ropInt);
+	void setLop(std::string* lop);
+	void setRop(std::string* rop);
 };
 
 extern std::vector<IrItem*> IrList;

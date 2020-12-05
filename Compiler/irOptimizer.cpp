@@ -44,7 +44,53 @@ void IrOptimizer::div2sra() {
 	}
 }
 
+void IrOptimizer::tempPropagation() {
+	std::vector<IrItem*>::iterator it;
+	for (it = IrList.begin(); it != IrList.end(); ) {
+		IrItem* ir = *it;
+		if ((ir->getOp() == IR_ADD || ir->getOp() == IR_SUB || ir->getOp() == IR_MUL || ir->getOp() == IR_DIV) &&
+			ir->getLopType() == INTTYPE && ir->getRopType() == INTTYPE && ir->getRes()->at(0) == '$') {
+			std::string* label = ir->getRes();
+			int num = 0;
+			switch (ir->getOp()) {
+			case IR_ADD:
+				num = ir->getLopInt() + ir->getRopInt();
+				break;
+			case IR_SUB:
+				num = ir->getLopInt() - ir->getRopInt();
+				break;
+			case IR_MUL:
+				num = ir->getLopInt() * ir->getRopInt();
+				break;
+			case IR_DIV:
+				num = ir->getLopInt() / ir->getRopInt();
+				break;
+			}
+			for (std::vector<IrItem*>::iterator itB = it + 1;
+				itB != IrList.end() && (*itB)->getOp() != IR_LABEL &&
+				(*itB)->getOp() != IR_BZ && (*itB)->getOp() != IR_BNZ; ++itB) {
+				IrItem* irB = *itB;
+				if (irB->getLopType() == TMPTYPE && *irB->getLop() == *label) {
+					irB->setLopType(INTTYPE);
+					irB->setLopInt(num);
+					irB->setLop(nullptr);
+				}
+				if (irB->getRopType() == TMPTYPE && *irB->getRop() == *label) {
+					irB->setRopType(INTTYPE);
+					irB->setRopInt(num);
+					irB->setRop(nullptr);
+				}
+			}
+			it = IrList.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+}
+
 void IrOptimizer::optimize() {
+	tempPropagation();
 	mul2sll();
 	div2sra();
 }

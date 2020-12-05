@@ -66,6 +66,30 @@ void IrItem::setRes(std::string* newRes) {
 	res = newRes;
 }
 
+void IrItem::setLopType(int lopType) {
+	this->lopType = lopType;
+}
+
+void IrItem::setRopType(int ropType) {
+	this->ropType = ropType;
+}
+
+void IrItem::setLopInt(int lopInt) {
+	this->lopInt = lopInt;
+}
+
+void IrItem::setRopInt(int ropInt) {
+	this->ropInt = ropInt;
+}
+
+void IrItem::setLop(std::string* lop) {
+	this->lop = lop;
+}
+
+void IrItem::setRop(std::string* rop) {
+	this->rop = rop;
+}
+
 std::string* IrGenerator::tempIdentifierGen(bool rollback) {
 	static int i = 0;
 	if (rollback) {
