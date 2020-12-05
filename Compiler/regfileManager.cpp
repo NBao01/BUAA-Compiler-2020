@@ -13,6 +13,7 @@ Reg::Reg(int id) {
 	this->dirty = false;
 	this->temp = false;
 	this->inStack = false;
+	this->nOfArray = 0;
 }
 
 int Reg::getId() {
@@ -39,6 +40,10 @@ bool Reg::isInStack() {
 	return inStack;
 }
 
+int Reg::getNOfArray() {
+	return nOfArray;
+}
+
 void Reg::setLabel(std::string* label) {
 	this->label = label;
 }
@@ -57,6 +62,10 @@ void Reg::setTemp(bool temp) {
 
 void Reg::setInStack(bool inStack) {
 	this->inStack = inStack;
+}
+
+void Reg::setNOfArray(int n) {
+	this->nOfArray = n;
 }
 
 void RegfileManager::init() {
@@ -100,7 +109,13 @@ Reg* RegfileManager::getTempReg() {
 				MipsGenerator::addI(MIPS_SW, $sp, reg->getId(), ti->getOffset(), nullptr);
 			}
 		}
-		ti->setCache(nullptr);
+		if (ti->getDimension() > 0) {
+			ti->setCache(nullptr, reg->getNOfArray());
+			reg->setNOfArray(0);
+		}
+		else {
+			ti->setCache(nullptr);
+		}
 	}
 	reg->setValid(true);
 	reg->setDirty(false);
@@ -124,7 +139,13 @@ Reg* RegfileManager::getSavedReg() {
 				MipsGenerator::addI(MIPS_SW, $sp, reg->getId(), ti->getOffset(), nullptr);
 			}
 		}
-		ti->setCache(nullptr);
+		if (ti->getDimension() > 0) {
+			ti->setCache(nullptr, reg->getNOfArray());
+			reg->setNOfArray(0);
+		}
+		else {
+			ti->setCache(nullptr);
+		}
 	}
 	reg->setValid(true);
 	reg->setDirty(false);

@@ -12,7 +12,8 @@ private:
 	bool valid;
 	bool dirty;
 	bool temp;
-	bool inStack;
+	bool inStack;	// For env save and restore
+	int nOfArray;
 public:
 	Reg(int id);
 	int getId();
@@ -21,11 +22,13 @@ public:
 	bool isDirty();
 	bool isTemp();
 	bool isInStack();
+	int getNOfArray();
 	void setLabel(std::string* label);
 	void setValid(bool valid);
 	void setDirty(bool dirty);
 	void setTemp(bool temp);
 	void setInStack(bool inStack);
+	void setNOfArray(int n);
 };
 
 extern Reg* regfile[32];

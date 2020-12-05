@@ -35,6 +35,7 @@ private:
 	std::vector<int>* initialValues;
 	int scopeInside;	// For function, store their inside scope
 	Reg* cache;
+	std::vector<Reg*>* caches;
 public:
 	static int scope_i;
 	static int offset_i;
@@ -63,6 +64,7 @@ public:
 	std::vector<int>* getInitialValues();
 	int getScopeInside();
 	Reg* getCache();
+	Reg* getCache(int n);
 	// Setters
 	void setDimension(int dimension, int dim0, int dim1);
 	void setParams(int paramNum, std::vector<int>* paramsRetType);
@@ -73,6 +75,7 @@ public:
 	void setInitialValues(std::vector<int>* initialValues);
 	void setScopeInside(int scopeInside);
 	void setCache(Reg* reg);
+	void setCache(Reg* reg, int n);
 };
 
 extern std::vector<TableItem*> table;

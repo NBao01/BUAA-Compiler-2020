@@ -565,30 +565,36 @@ void MipsGenerator::generate() {
 			}
 
 			ti = TableTools::search(ir->getLop(), curScope);
-			rt = getRegL0R1(ir, curScope, 1);
-			rs = RegfileManager::mappingTemp()->getId();
-			addI(MIPS_SLL, rt, rs, 2, nullptr);	// Actually, sll is a R-type Instruction
-			if (ti->getScope() == 0) {
-				addI(MIPS_LW, rs, r->getId(), 0, ti->getLabel());
+
+			if (ir->getRopType() == INTTYPE && ti->getCache(ir->getRopInt()) != nullptr) {
+				addI(MIPS_ADDI, ti->getCache(ir->getRopInt())->getId(), r->getId(), 0, nullptr);
 			}
 			else {
-				addI(MIPS_ADDI, rs, rs, ti->getOffset(), nullptr);
-				addR(MIPS_ADD, rs, $sp, rs);
-				addI(MIPS_LW, rs, r->getId(), 0, nullptr);
-			}
-			
-			RegfileManager::setInvalid(rs);
-			if (ir->getRopType() == TMPTYPE || ir->getRopType() == TMPTYPE_CH ||
-				ir->getRopType() == INTTYPE || ir->getRopType() == CHTYPE) {
-				RegfileManager::setInvalid(rt);
+				rt = getRegL0R1(ir, curScope, 1);
+				rs = RegfileManager::mappingTemp()->getId();
+				addI(MIPS_SLL, rt, rs, 2, nullptr);	// Actually, sll is a R-type Instruction
+				if (ti->getScope() == 0) {
+					addI(MIPS_LW, rs, r->getId(), 0, ti->getLabel());
+				}
+				else {
+					addI(MIPS_ADDI, rs, rs, ti->getOffset(), nullptr);
+					addR(MIPS_ADD, rs, $sp, rs);
+					addI(MIPS_LW, rs, r->getId(), 0, nullptr);
+				}
+
+				RegfileManager::setInvalid(rs);
+				if (ir->getRopType() == TMPTYPE || ir->getRopType() == TMPTYPE_CH ||
+					ir->getRopType() == INTTYPE || ir->getRopType() == CHTYPE) {
+					RegfileManager::setInvalid(rt);
+				}
 			}
 			break;
 		case IR_ARRAYSET:
-			rs = getRegL0R1(ir, curScope, 0);
+			rs = getRegL0R1(ir, curScope, 0);	// value to be set
 
 			ti = TableTools::search(ir->getRes(), curScope);
-			rt = getRegL0R1(ir, curScope, 1);
-			r = RegfileManager::mappingTemp();
+			rt = getRegL0R1(ir, curScope, 1);	// pseudo-offset 
+			r = RegfileManager::mappingTemp();	// temp reg for real-offset
 			addI(MIPS_SLL, rt, r->getId(), 2, nullptr);	// Actually, sll is a R-type Instruction
 			if (ti->getScope() == 0) {
 				addI(MIPS_SW, r->getId(), rs, 0, ti->getLabel());
@@ -607,6 +613,13 @@ void MipsGenerator::generate() {
 			if (ir->getRopType() == TMPTYPE || ir->getRopType() == TMPTYPE_CH ||
 				ir->getRopType() == INTTYPE || ir->getRopType() == CHTYPE) {
 				RegfileManager::setInvalid(rt);
+			}
+
+			if ((ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH) && ir->getRopType() == INTTYPE) {
+				ti->setCache(regfile[rs], ir->getRopInt());
+				regfile[rs]->setValid(true);
+				regfile[rs]->setLabel(ti->getLabel());
+				regfile[rs]->setNOfArray(ir->getRopInt());
 			}
 			break;
 		case IR_SLL:

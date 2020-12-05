@@ -35,6 +35,7 @@ TableItem::TableItem(std::string* name, int type, int retType, int scope) {
 	this->initialValues = nullptr;
 	this->scopeInside = 0;
 	this->cache = 0;
+	this->caches = nullptr;
 }
 
 TableItem* TableItem::newConstTableItem(std::string* name, int type, int retType, int initialValue) {
@@ -88,6 +89,14 @@ TableItem* TableItem::newVarTableItem(std::string* name, int type, int retType,
 	TableItem* ti = new TableItem(name, type, retType, scope_i);
 
 	ti->setDimension(dimension, dim0, dim1);
+
+	if (dimension > 0) {
+		ti->caches = new std::vector<Reg*>();
+		ti->caches->resize(dim0 * dim1);
+		for (int i = 0; i < dim0 * dim1; i++) {
+			ti->caches->at(i) = nullptr;
+		}
+	}
 
 	// Make Label for Global Var
 	if (scope_i == 0) {
@@ -220,6 +229,10 @@ void TableItem::setCache(Reg* reg) {
 	this->cache = reg;
 }
 
+void TableItem::setCache(Reg* reg, int n) {
+	this->caches->at(n) = reg;
+}
+
 bool TableItem::isSameScope(int curScope) {
 	return scope == curScope;
 }
@@ -297,6 +310,10 @@ int TableItem::getScopeInside() {
 
 Reg* TableItem::getCache() {
 	return cache;
+}
+
+Reg* TableItem::getCache(int n) {
+	return caches->at(n);
 }
 
 void TableTools::setStackSpaceOfScope(int space) {
