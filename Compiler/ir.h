@@ -43,6 +43,7 @@ public:
 	void setRopInt(int ropInt);
 	void setLop(std::string* lop);
 	void setRop(std::string* rop);
+	void setOp(int op);
 };
 
 extern std::vector<IrItem*> IrList;

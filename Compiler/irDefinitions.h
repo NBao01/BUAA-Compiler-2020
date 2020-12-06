@@ -29,6 +29,11 @@
 #define IR_PRECALL	24
 #define IR_SLL		25
 #define IR_SRA		26
+#define IR_INLINE		27
+#define IR_OUTLINE		28	// Inline end
+#define IR_PUSH_IL		29	// Push for inline
+#define IR_FUNCDEF_IL	30	// Function define for inline
+#define IR_RETURN_IL	31	// Return for inline
 
 extern const std::string irInstructions[];
 

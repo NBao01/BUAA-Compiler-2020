@@ -34,6 +34,7 @@ TableItem::TableItem(std::string* name, int type, int retType, int scope) {
 	this->initialValue = 0;
 	this->initialValues = nullptr;
 	this->scopeInside = 0;
+	this->inLine = false;
 	this->cache = 0;
 	this->caches = nullptr;
 }
@@ -225,6 +226,10 @@ void TableItem::setScopeInside(int scopeInside) {
 	this->scopeInside = scopeInside;
 }
 
+void TableItem::setInline(bool inLine) {
+	this->inLine = inLine;
+}
+
 void TableItem::setCache(Reg* reg) {
 	this->cache = reg;
 }
@@ -306,6 +311,10 @@ std::vector<int>* TableItem::getInitialValues() {
 
 int TableItem::getScopeInside() {
 	return scopeInside;
+}
+
+bool TableItem::isInline() {
+	return inLine;
 }
 
 Reg* TableItem::getCache() {

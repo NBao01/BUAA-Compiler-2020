@@ -27,5 +27,10 @@ const std::string irInstructions[] = {
 	"ARRAYSET",
 	"PRECALL",
 	"SLL",
-	"SRA"
+	"SRA",
+	"INLINE",
+	"OUTLINE",
+	"PUSH_IL",
+	"INLINE_FUNC",
+	"INLINE_RET"
 };

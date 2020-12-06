@@ -90,6 +90,10 @@ void IrItem::setRop(std::string* rop) {
 	this->rop = rop;
 }
 
+void IrItem::setOp(int op) {
+	this->op = op;
+}
+
 std::string* IrGenerator::tempIdentifierGen(bool rollback) {
 	static int i = 0;
 	if (rollback) {
@@ -387,6 +391,39 @@ void IrGenerator::output() {
 				out << *(*it)->getLop();
 			}
 			out << " " << (*it)->getRopInt() << " " << *(*it)->getRes() << std::endl;
+		case IR_PUSH_IL:
+			out << irInstructions[op] << " ";
+			if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE || (*it)->getLopType() == TMPTYPE_CH) {
+				out << *(*it)->getLop();
+			}
+			else if ((*it)->getLopType() == CHTYPE) {
+				out << "'" << *(*it)->getLop() << "'";
+			}
+			else if ((*it)->getLopType() == INTTYPE) {
+				out << (*it)->getLopInt();
+			}
+			out << " " << (*it)->getRopInt() << std::endl;
+			break;
+		case IR_INLINE:
+		case IR_OUTLINE:
+			out << irInstructions[op] << " " << *(*it)->getLop() << " " << *(*it)->getRes() << std::endl;
+			break;
+		case IR_FUNCDEF_IL:
+			out << irInstructions[op] << " " << *(*it)->getLop() << "()" << std::endl;
+			break;
+		case IR_RETURN_IL:
+			out << irInstructions[op] << " ";
+			if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE || (*it)->getLopType() == TMPTYPE_CH) {
+				out << *(*it)->getLop() << " ";
+			}
+			else if ((*it)->getLopType() == CHTYPE) {
+				out << "'" << *(*it)->getLop() << "' ";
+			}
+			else if ((*it)->getLopType() == INTTYPE) {
+				out << (*it)->getLopInt() << " ";
+			}
+			out << *(*it)->getRes() << std::endl;
+			break;
 		}
 	}
 	out.close();

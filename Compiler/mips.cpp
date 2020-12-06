@@ -264,6 +264,8 @@ void MipsGenerator::generate() {
 	Reg* r = nullptr;
 	int rs = 0, rt = 0;
 	int arguments = 0;
+	int scopeOutsideInline = 0;
+	std::vector<Reg*> inlineRegs;
 	std::vector<IrItem*>::iterator it;
 	for (it = IrList.begin(); it != IrList.end(); it++) {
 		IrItem* ir = *it;
@@ -271,8 +273,8 @@ void MipsGenerator::generate() {
 		case IR_FUNCDEF:
 			RegfileManager::flush();
 			TableTools::cacheFlush();
-			curScope++;
 			ti = TableTools::search(ir->getLop(), 0);
+			curScope = ti->getScopeInside();
 			addLabel(ti->getLabel());
 			initLocals(curScope);
 			break;
@@ -800,6 +802,7 @@ void MipsGenerator::generate() {
 				regfile[rs]->setNOfArray(ir->getRopInt());
 			}
 			break;
+		// Code below is added for mul/div optimize
 		case IR_SLL:
 			assert(ir->getRopType() == INTTYPE);
 			rs = getRegL0R1(ir, curScope, 0);
@@ -839,6 +842,107 @@ void MipsGenerator::generate() {
 				ir->getLopType() == INTTYPE || ir->getLopType() == CHTYPE) && ir->getRopInt() != 31) {
 				RegfileManager::setInvalid(rs);
 			}
+			break;
+		// Code below is added for inline optimize.
+		case IR_INLINE:
+			addLabel(new std::string(*ir->getLop() + "_" + *ir->getRes()));
+			arguments = 0;
+			break;
+		case IR_PUSH_IL:
+			r = RegfileManager::mappingTemp();
+			inlineRegs.push_back(r);
+			rt = r->getId();
+			// rt = arguments < 3 ? arguments + $a1 : $v1;	// Save first 3 args to $a1, $a2, $a3, the fourth $v1
+			if (ir->getLopType() == INTTYPE) {
+				addI(MIPS_LI, 0, rt, ir->getLopInt(), nullptr);
+			}
+			else if (ir->getLopType() == CHTYPE) {
+				addI(MIPS_LI, 0, rt, (int)ir->getLop()->at(0), nullptr);
+			}
+			else if (ir->getLopType() == IDTYPE) {
+				ti = TableTools::search(ir->getLop(), curScope);
+				if (ti->getCache() == nullptr) {
+					RegfileManager::mapping(ti, true, rt);
+				}
+				else {
+					r = ti->getCache();
+					addI(MIPS_ADDI, r->getId(), rt, 0, nullptr);
+				}
+				/*r = ti->getCache() == nullptr ? RegfileManager::mapping(ti, true, $a0) : ti->getCache();
+				addI(MIPS_ADDI, r->getId(), rt, 0, nullptr);*/
+			}
+			else if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH) {
+				rs = RegfileManager::searchTemp(ir->getLop());
+				addI(MIPS_ADDI, rs, rt, 0, nullptr);
+				RegfileManager::setInvalid(rs);
+			}
+			arguments++;
+			break;
+		case IR_FUNCDEF_IL:
+			scopeOutsideInline = curScope;	// store curScope
+			curScope = TableTools::search(ir->getLop(), 0)->getScopeInside();
+			for (int i = 0, j = 0; i < table.size(); i++) {
+				if (table[i]->isSameScope(curScope)) {
+					//int regId = table[i]->getOffset() / 4 <= 2 ? $a1 + table[i]->getOffset() / 4 : $v1;
+					//Reg* reg = regfile[regId];
+					if (table[i]->getType() == PARAM) {
+						r = inlineRegs.at(j++);
+						table[i]->setCache(r);
+						r->setValid(true);
+						r->setLabel(table[i]->getLabel());
+						r->setDirty(false);
+						r->setTemp(true);
+					}
+					else {
+						r = RegfileManager::mapping(table[i]);
+						inlineRegs.push_back(r);
+						assert(table[i]->getDimension() == 0);
+						if (table[i]->getHasInitialValue()) {
+							addI(MIPS_LI, 0, r->getId(), table[i]->getInitialValue(), nullptr);
+						}
+						r->setTemp(true);
+						// Very Important! Mark this reg as Temp, to prevent WriteAllBack delete the cache record.
+					}
+				}
+			}
+			break;
+		case IR_RETURN_IL:
+			// Move ret-val to $v1
+			if (ir->getLopType() == INTTYPE) {
+				addI(MIPS_LI, 0, $v1, ir->getLopInt(), nullptr);
+			}
+			else if (ir->getLopType() == CHTYPE) {
+				addI(MIPS_LI, 0, $v1, (int)ir->getLop()->at(0), nullptr);
+			}
+			else if (ir->getLopType() == IDTYPE) {
+				ti = TableTools::search(ir->getLop(), curScope);
+				r = ti->getCache() == nullptr ? RegfileManager::mapping(ti, true) : ti->getCache();
+				addI(MIPS_ADDI, r->getId(), $v1, 0, nullptr);
+			}
+			else if (ir->getLopType() == TMPTYPE || ir->getLopType() == TMPTYPE_CH) {
+				rs = RegfileManager::searchTemp(ir->getLop());
+				addI(MIPS_ADDI, rs, $v1, 0, nullptr);
+				RegfileManager::setInvalid(rs);
+			}
+			if ((*(it + 1))->getOp() != IR_OUTLINE) {
+				addJ(MIPS_J, ir->getRes());		// Jump to inline-end-label
+			}
+			break;
+		case IR_OUTLINE:
+			curScope = scopeOutsideInline;	// restore curScope
+			scopeOutsideInline = 0;
+			addLabel(ir->getRes());			// Add inline-end-label
+			ti = TableTools::search(ir->getLop(), 0);
+			if (ti->getRetType() != VOID) {		// Has Return-Value
+				if (ir->getRop() != nullptr) {
+					r = RegfileManager::mappingTemp(ir->getRop());	// Rop is the ret-label of outline ir.
+					addI(MIPS_ADDI, $v1, r->getId(), 0, nullptr);
+				}
+			}
+			for (int i = 0; i < inlineRegs.size(); i++) {
+				RegfileManager::setInvalid(inlineRegs.at(i)->getId());
+			}
+			inlineRegs.clear();
 			break;
 		}
 	}

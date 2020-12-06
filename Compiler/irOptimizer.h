@@ -9,6 +9,8 @@ private:
 	static void mul2sll();
 	static void div2sra();
 	static void tempPropagation();
+	static void inLine();
+	static std::string* inlineLabelGen();
 public:
 	static void optimize();
 };

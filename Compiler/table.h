@@ -34,6 +34,7 @@ private:
 	int initialValue;
 	std::vector<int>* initialValues;
 	int scopeInside;	// For function, store their inside scope
+	bool inLine;
 	Reg* cache;
 	std::vector<Reg*>* caches;
 public:
@@ -63,6 +64,7 @@ public:
 	int getInitialValue();
 	std::vector<int>* getInitialValues();
 	int getScopeInside();
+	bool isInline();
 	Reg* getCache();
 	Reg* getCache(int n);
 	// Setters
@@ -74,6 +76,7 @@ public:
 	void setInitialValue(int initialValue);
 	void setInitialValues(std::vector<int>* initialValues);
 	void setScopeInside(int scopeInside);
+	void setInline(bool inLine);
 	void setCache(Reg* reg);
 	void setCache(Reg* reg, int n);
 };
