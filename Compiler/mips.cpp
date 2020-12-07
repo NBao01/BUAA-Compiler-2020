@@ -683,6 +683,8 @@ void MipsGenerator::generate() {
 			else {
 				r = RegfileManager::mappingTemp(ir->getRes());
 			}
+			// It's OK to load global array to $t-reg, because we don't make cache for array element here.
+			// And, array element cache is always not dirty, so write back will not be wrong in getTempReg.
 
 			ti = TableTools::search(ir->getLop(), curScope);
 			

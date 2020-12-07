@@ -87,8 +87,17 @@ Reg* RegfileManager::getTempReg() {
 			break;
 		}
 	}
-	if (regId == -1) {	// No invalid regs
-		static int roundRobin = 0;
+	static int roundRobin = 0;
+	if (regId == -1) {	// No invalid regs, find undirty reg
+		int i = 0;
+		do {
+			regId = roundRobin <= 7 ? roundRobin + 8 : roundRobin + 16;
+			roundRobin = (roundRobin + 1) % 10;
+			i++;
+		} while ((regfile[regId]->isTemp() || regfile[regId]->isDirty()) && i < 10);
+		// You can't use a valid temp reg, for the value in the reg will disappear!
+	}
+	if (regId == -1) {	// No undirty reg, find nottemp reg
 		do {
 			regId = roundRobin <= 7 ? roundRobin + 8 : roundRobin + 16;
 			roundRobin = (roundRobin + 1) % 10;
@@ -125,9 +134,33 @@ Reg* RegfileManager::getTempReg() {
 }
 
 Reg* RegfileManager::getSavedReg() {
-	static int i = 0;
+	/*static int i = 0;
 	Reg* reg = regfile[i + 16];
-	i++; if (i > 7) { i -= 8; } // i = (i + 1) % 8;
+	i++; if (i > 7) { i -= 8; } // i = (i + 1) % 8;*/
+
+	int regId = -1;
+	for (int i = 0; i < 8; i++) {
+		int j = i + 16;
+		if (!regfile[j]->isValid()) {
+			regId = j;
+			break;
+		}
+	}
+	static int roundRobin = 0;
+	if (regId == -1) {	// No invalid regs, find undirty reg
+		int i = 0;
+		do {
+			regId = roundRobin + 16;
+			roundRobin = (roundRobin + 1) % 8;
+			i++;
+		} while (regfile[regId]->isDirty() && i < 8);	// if all dirty, can avoid infinite loop
+	}
+	if (regId == -1) {	// No undirty reg, find a reg
+		regId = roundRobin + 16;
+		roundRobin = (roundRobin + 1) % 10;
+	}
+
+	Reg* reg = regfile[regId];
 	// TODO: Write Back to Memory
 	if (reg->isValid()) {
 		TableItem* ti = TableTools::searchByLabel(reg->getLabel());
