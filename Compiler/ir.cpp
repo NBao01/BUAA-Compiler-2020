@@ -391,6 +391,7 @@ void IrGenerator::output() {
 				out << *(*it)->getLop();
 			}
 			out << " " << (*it)->getRopInt() << " " << *(*it)->getRes() << std::endl;
+			break;
 		case IR_PUSH_IL:
 			out << irInstructions[op] << " ";
 			if ((*it)->getLopType() == IDTYPE || (*it)->getLopType() == TMPTYPE || (*it)->getLopType() == TMPTYPE_CH) {

@@ -416,4 +416,5 @@ void RegfileManager::restoreEnv() {
 
 void RegfileManager::setInvalid(int regId) {
 	regfile[regId]->setValid(false);
+	regfile[regId]->setLabel(nullptr);
 }
