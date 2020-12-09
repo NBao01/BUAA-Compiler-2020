@@ -549,6 +549,7 @@ void MipsGenerator::generate() {
 			break;
 		case IR_PRECALL:
 			addI(MIPS_ADDI, $sp, $fp, 0, nullptr);
+			RegfileManager::writeABack();
 			RegfileManager::writeSBack();
 			RegfileManager::saveEnv();
 			addI(MIPS_ADDI, $sp, $sp, -TableTools::getstackSpaceOfScope(ir->getLop()), nullptr);

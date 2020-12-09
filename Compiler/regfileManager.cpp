@@ -298,9 +298,9 @@ void RegfileManager::writeSBack() {
 	}
 }
 
-void RegfileManager::writeAvBack() {
-	for (int i = 0; i < 4; i++) {
-		Reg* reg = regfile[i < 3 ? $a1 + i : $v1];
+void RegfileManager::writeABack() {
+	for (int i = 5; i <= 7; i++) {
+		Reg* reg = regfile[i];
 		if (reg->isValid()) {
 			TableItem* ti = TableTools::searchByLabel(reg->getLabel());
 			if (reg->isDirty()) {
