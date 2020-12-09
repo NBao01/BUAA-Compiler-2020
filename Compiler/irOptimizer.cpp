@@ -72,7 +72,7 @@ void IrOptimizer::tempPropagation() {
 			for (std::vector<IrItem*>::iterator itB = it + 1;
 				itB != IrList.end() && (*itB)->getOp() != IR_FUNCDEF && (*itB)->getOp() != IR_LABEL &&
 				(*itB)->getOp() != IR_BZ && (*itB)->getOp() != IR_BNZ && 
-				(*itB)->getOp() != IR_PRECALL && (*itB)->getOp() != IR_GOTO && (*itB)->getOp() != IR_RET; ++itB) {
+				(*itB)->getOp() != IR_CALL && (*itB)->getOp() != IR_GOTO; ++itB) {
 				IrItem* irB = *itB;
 				if (irB->getLopType() == TMPTYPE && *irB->getLop() == *label) {
 					irB->setLopType(INTTYPE);
@@ -216,5 +216,5 @@ void IrOptimizer::optimize() {
 	tempPropagation();
 	mul2sll();
 	div2sra();
-	//inLine();
+	inLine();
 }

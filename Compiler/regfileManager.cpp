@@ -240,7 +240,7 @@ int RegfileManager::searchTemp(std::string* label) {
 			return j;
 		}
 	}
-	std::cout << "In regfileManager.cpp, line 150: No Such Temp Register!" << std::endl;
+	std::cout << "In regfileManager.cpp, line 150: No Such Temp Register for " << *label << "!" << std::endl;
 	return 0;
 }
 

@@ -294,6 +294,7 @@ void MipsGenerator::generate() {
 				else {
 					addI(MIPS_ADDI, ti->getCache()->getId(), $a0, 0, nullptr);
 				}
+				//addI(MIPS_SRA, $a0, $a0, 8, nullptr);
 				if (ti->getRetType() == INT) {
 					addI(MIPS_LI, 0, $v0, 1, nullptr);
 				}
