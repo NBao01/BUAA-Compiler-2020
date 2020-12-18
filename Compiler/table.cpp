@@ -800,6 +800,6 @@ TableItem* TableTools::searchByLabel(std::string* label) {
 
 void TableTools::cacheFlush() {
 	for (int i = 0; i < table.size(); i++) {
-		table[i]->setCache(0);
+		table[i]->setCache(nullptr);
 	}
 }

@@ -245,6 +245,22 @@ int RegfileManager::searchTemp(std::string* label) {
 }
 
 void RegfileManager::writeAllBack() {
+	for (int i = 5; i <= 7; i++) {
+		Reg* reg = regfile[i];
+		if (reg->isValid()) {
+			TableItem* ti = TableTools::searchByLabel(reg->getLabel());
+			if (reg->isDirty()) {
+				if (ti->getScope() == 0) {
+					MipsGenerator::addI(MIPS_SW, 0, reg->getId(), 0, ti->getLabel());
+				}
+				else {
+					MipsGenerator::addI(MIPS_SW, $sp, reg->getId(), ti->getOffset(), nullptr);
+				}
+			}
+			ti->setCache(nullptr);
+			reg->setValid(false);
+		}
+	}
 	for (int i = 0; i < 10; i++) {
 		Reg* reg = regfile[i <= 7 ? i + 8 : i + 16];
 		if (!reg->isTemp() && reg->isValid()) {
@@ -318,6 +334,9 @@ void RegfileManager::writeABack() {
 }
 
 void RegfileManager::flush() {
+	for (int i = 5; i <= 7; i++) {
+		regfile[i]->setValid(false);
+	}
 	for (int i = 0; i < 10; i++) {
 		regfile[i <= 7 ? i + 8 : i + 16]->setValid(false);
 	}
