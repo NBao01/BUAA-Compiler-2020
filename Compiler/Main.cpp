@@ -19,14 +19,17 @@ int main() {
 	SyntaxAnalyzer::analyze();
 	(step == 2) ? SyntaxAnalyzer::output() : doNothing();
 
-	(step == 3) ? ErrorHandler::output() : doNothing();
+	if (ErrorHandler::hasError()) {
+		ErrorHandler::output();
+	}
+	else {
+		(optimize) ? IrOptimizer::optimize() : doNothing();
 
-	(optimize) ? IrOptimizer::optimize() : doNothing();
+		(step == 4 || step == 5) ? IrGenerator::output() : doNothing();
 
-	(step == 4 || step == 5) ? IrGenerator::output() : doNothing();
-
-	MipsGenerator::generate();
-	(step == 5) ? MipsGenerator::output() : doNothing();
+		MipsGenerator::generate();
+		(step == 5) ? MipsGenerator::output() : doNothing();
+	}
 
 	return 0;
 }

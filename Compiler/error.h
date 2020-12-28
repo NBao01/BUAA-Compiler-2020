@@ -36,6 +36,7 @@ public:
 	static void addErrorItem(ErrorItem* e);
 	static void addErrorItem(int type, int line);
 	static void output();
+	static bool hasError();
 };
 
 void error(const char* str);

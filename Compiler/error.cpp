@@ -40,6 +40,10 @@ void ErrorHandler::output() {
 	out.close();
 }
 
+bool ErrorHandler::hasError() {
+	return !errorList.empty();
+}
+
 void error(const char *str) {
 	puts(str);
 	exit(-1);

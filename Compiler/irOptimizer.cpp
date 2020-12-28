@@ -126,18 +126,22 @@ void IrOptimizer::inLine() {
 		function = *it;
 		TableItem* ti = TableTools::search(function->at(0)->getLop(), 0);
 		assert(ti->getType() == FUNC);
-		bool hasArray = false;	int localsNum = 0;
+		bool hasArray = false;	int localsNum = 0;	int paramsNum = 0;
 		for (int i = 0; i < table.size(); i++) {
 			if (table[i]->isSameScope(ti->getScopeInside())/* && table[i]->getType() != PARAM*/) {
 				hasArray = (table[i]->getDimension() > 0) | hasArray;
 				localsNum++;
+				if (table[i]->getType() == PARAM) {
+					paramsNum++;
+				}
 			}
 		}
 		bool hasFunctionCall = false;
 		for (int i = 0; i < function->size(); i++) {
 			hasFunctionCall = (function->at(i)->getOp() == IR_CALL) | hasFunctionCall;
 		}
-		ti->setInline(!hasFunctionCall && !hasArray && localsNum <= 4 && !ti->isSameName(new std::string("main")));
+		ti->setInline(!hasFunctionCall && !hasArray && localsNum <= 4 && 
+			((localsNum == 1 && paramsNum == 1) || localsNum != 1) && !ti->isSameName(new std::string("main")));
 		// function that has less than 4 local non-array vars (include params) and no function call, set inline true
 	}
 

@@ -436,13 +436,13 @@ void TableTools::addVars(int it) {
 			dimension++;
 			assert(wordlist[++i]->getType() == INTCON);
 			std::stringstream ss; ss << wordlist[i]->getWord(); ss >> dim0;
-			assert(wordlist[++i]->getType() == RBRACK);
+			//assert(wordlist[++i]->getType() == RBRACK);
 
 			if (wordlist[++i]->getType() == LBRACK) {
 				dimension++;
 				assert(wordlist[++i]->getType() == INTCON);
 				std::stringstream ss; ss << wordlist[i]->getWord(); ss >> dim1;
-				assert(wordlist[++i]->getType() == RBRACK);
+				//assert(wordlist[++i]->getType() == RBRACK);
 			}
 		}
 
