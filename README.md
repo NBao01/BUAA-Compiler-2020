@@ -4,9 +4,9 @@ From C-Like Language To Mips Assembly Language
 
 ## 运行环境
 
-Visual Studio Community2019
+Visual Studio Community 2019
 
-clang8.0.1
+clang 8.0.1
 
 Mars.jar
 
